@@ -1,0 +1,103 @@
+{
+  "last_updated": "2026-09-07T12:20:02.937121+00:00",
+  "price_history": {
+    "8160aced482105ed": [
+      {
+        "date": "2026-09-07",
+        "price": 229990,
+        "status": "active"
+      }
+    ],
+    "36f2f8b000b794ae": [
+      {
+        "date": "2026-09-07",
+        "price": 219500,
+        "status": "active"
+      }
+    ],
+    "ea282b33523dcfef": [
+      {
+        "date": "2026-09-07",
+        "price": 238900,
+        "status": "active"
+      }
+    ],
+    "6f220bbc7103dfa5": [
+      {
+        "date": "2026-09-07",
+        "price": 224900,
+        "status": "active"
+      }
+    ],
+    "bc4c97d4c154dae9": [
+      {
+        "date": "2026-09-07",
+        "price": 209900,
+        "status": "active"
+      }
+    ],
+    "73e7d4ce4b952a18": [
+      {
+        "date": "2026-09-07",
+        "price": 234990,
+        "status": "active"
+      }
+    ]
+  },
+  "events": [
+    {
+      "date": "2026-09-07",
+      "listing_id": "8160aced482105ed",
+      "event": "new",
+      "builder_name": "D.R. Horton",
+      "address": "142 Palmetto Landing Dr",
+      "old_price": null,
+      "new_price": 229990
+    },
+    {
+      "date": "2026-09-07",
+      "listing_id": "36f2f8b000b794ae",
+      "event": "new",
+      "builder_name": "True Homes",
+      "address": "88 Sound View Ct",
+      "old_price": null,
+      "new_price": 219500
+    },
+    {
+      "date": "2026-09-07",
+      "listing_id": "ea282b33523dcfef",
+      "event": "new",
+      "builder_name": "Lennar",
+      "address": "310 Cypress Cove Ln",
+      "old_price": null,
+      "new_price": 238900
+    },
+    {
+      "date": "2026-09-07",
+      "listing_id": "6f220bbc7103dfa5",
+      "event": "new",
+      "builder_name": "Ryan Homes",
+      "address": "27 Marsh Harbor Way",
+      "old_price": null,
+      "new_price": 224900
+    },
+    {
+      "date": "2026-09-07",
+      "listing_id": "bc4c97d4c154dae9",
+      "event": "new",
+      "builder_name": "Landmark 24 Homes",
+      "address": "5 Harborview Row",
+      "old_price": null,
+      "new_price": 209900
+    },
+    {
+      "date": "2026-09-07",
+      "listing_id": "73e7d4ce4b952a18",
+      "event": "new",
+      "builder_name": "D.R. Horton",
+      "address": "19 Currituck Landing Cir",
+      "old_price": null,
+      "new_price": 234990
+    }
+  ]
+}

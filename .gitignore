@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Scraper runtime artifacts
+data/.geocode_cache.json
+
+# Node / Next.js (dashboard/ has its own .gitignore too, this is a backstop)
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
