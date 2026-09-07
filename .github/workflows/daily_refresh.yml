@@ -1,0 +1,93 @@
+name: Daily Coastal NC Townhome Refresh
+
+on:
+  schedule:
+    # 12:00 UTC daily (08:00 ET / 07:00 CT during DST)
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+    inputs:
+      use_sample_data_fallback:
+        description: "Fall back to bundled sample data if a live source returns 0 results"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Install Python dependencies
+        run: pip install -r scraper/requirements.txt
+
+      - name: Install Playwright browsers
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run ETL pipeline
+        env:
+          USE_SAMPLE_DATA_FALLBACK: ${{ github.event.inputs.use_sample_data_fallback || 'true' }}
+          GEOCODE_CONTACT: ${{ github.repository }}
+          PYTHONUNBUFFERED: "1"
+        run: python -m scraper.pipeline
+        # Retries: the pipeline itself retries each HTTP request with
+        # exponential backoff (see scraper/utils/http.py). This step-level
+        # retry is a second layer of defense against a source being
+        # transiently unreachable for an entire run.
+        continue-on-error: false
+
+      - name: Run pipeline again on failure (single retry)
+        if: failure()
+        env:
+          USE_SAMPLE_DATA_FALLBACK: ${{ github.event.inputs.use_sample_data_fallback || 'true' }}
+          GEOCODE_CONTACT: ${{ github.repository }}
+          PYTHONUNBUFFERED: "1"
+        run: python -m scraper.pipeline
+
+      - name: Commit and push updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- data/listings.json data/history.json; then
+            echo "No changes to listings/history data; skipping commit."
+            exit 0
+          fi
+
+          git add data/listings.json data/history.json
+          COUNT=$(python -c "import json; print(json.load(open('data/listings.json'))['summary']['total_active_listings'])")
+          NEW=$(python -c "import json; print(json.load(open('data/listings.json'))['summary']['new_today'])")
+          DROPS=$(python -c "import json; print(json.load(open('data/listings.json'))['summary']['price_drops_today'])")
+          git commit -m "chore: daily refresh - ${COUNT} active listings (${NEW} new, ${DROPS} price drops)"
+
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:${{ github.ref_name }}; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying..."
+            sleep $((attempt * 5))
+            git fetch origin ${{ github.ref_name }}
+            git rebase origin/${{ github.ref_name }}
+          done
