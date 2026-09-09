@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-08T15:36:55.487738+00:00",
+  "generated_at": "2026-09-09T15:32:07.858399+00:00",
   "price_cap": 240000,
   "summary": {
-    "generated_at": "2026-09-08T15:36:55.487738+00:00",
+    "generated_at": "2026-09-09T15:32:07.858399+00:00",
     "total_active_listings": 6,
     "new_today": 0,
     "price_drops_today": 0,
@@ -54,7 +54,7 @@
       "source_url": "https://www.trihomesnc.com/communities/example-community-e",
       "listing_status": "unchanged",
       "first_seen": "2026-09-07",
-      "last_seen": "2026-09-08"
+      "last_seen": "2026-09-09"
     },
     {
       "id": "36f2f8b000b794ae",
@@ -106,7 +106,7 @@
       "source_url": "https://www.livabl.com/north-carolina/onslow-county/example-community-b",
       "listing_status": "unchanged",
       "first_seen": "2026-09-07",
-      "last_seen": "2026-09-08"
+      "last_seen": "2026-09-09"
     },
     {
       "id": "6f220bbc7103dfa5",
@@ -158,7 +158,7 @@
       "source_url": "https://www.newhomesource.com/community/example-community-d",
       "listing_status": "unchanged",
       "first_seen": "2026-09-07",
-      "last_seen": "2026-09-08"
+      "last_seen": "2026-09-09"
     },
     {
       "id": "8160aced482105ed",
@@ -210,7 +210,7 @@
       "source_url": "https://www.livabl.com/north-carolina/brunswick-county/example-community-a",
       "listing_status": "unchanged",
       "first_seen": "2026-09-07",
-      "last_seen": "2026-09-08"
+      "last_seen": "2026-09-09"
     },
     {
       "id": "73e7d4ce4b952a18",
@@ -262,7 +262,7 @@
       "source_url": "https://www.drhorton.com/north-carolina/example-community-f",
       "listing_status": "unchanged",
       "first_seen": "2026-09-07",
-      "last_seen": "2026-09-08"
+      "last_seen": "2026-09-09"
     },
     {
       "id": "ea282b33523dcfef",
@@ -308,7 +308,7 @@
       "source_url": "https://www.newhomesource.com/community/example-community-c",
       "listing_status": "unchanged",
       "first_seen": "2026-09-07",
-      "last_seen": "2026-09-08"
+      "last_seen": "2026-09-09"
     }
   ]
 }
