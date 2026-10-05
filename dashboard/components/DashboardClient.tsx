@@ -59,6 +59,14 @@ export default function DashboardClient({ data }: { data: ListingsPayload }) {
           <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
             NC Coastal Townhome Investment Dashboard
           </h1>
+          <a
+            href="/builder-board/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-2 rounded-full border border-ocean-200 bg-ocean-50 px-3 py-1 text-xs font-semibold text-ocean-700 hover:bg-ocean-100"
+          >
+            Builder Board
+          </a>
         </div>
         <p className="text-sm text-slate-500">
           New-construction townhomes &amp; attached villas in coastal North Carolina, priced at
