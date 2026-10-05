@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: oklch(0.972 0.006 85); }
+  * { box-sizing: border-box; }
+  a { color: oklch(0.50 0.10 240); text-decoration: none; border-bottom: 1px solid oklch(0.50 0.10 240 / 0.3); }
+  a:hover { color: oklch(0.42 0.11 240); border-bottom-color: oklch(0.42 0.11 240); }
+  input[type=range] { accent-color: oklch(0.50 0.10 240); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: oklch(0.85 0.01 85); border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+</style>
+</helmet>
+
+<div style="font-family:'Archivo',system-ui,sans-serif;color:oklch(0.26 0.015 250);background:oklch(0.972 0.006 85);min-height:100vh;padding-bottom:40px">
+
+  <div style="position:sticky;top:0;z-index:40;background:oklch(0.20 0.02 250);color:oklch(0.96 0.005 85);padding:18px 26px 0;min-width:1580px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:9px;height:9px;border-radius:50%;background:oklch(0.72 0.16 145);animation:pulseDot 2.4s ease-in-out infinite"></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:oklch(0.75 0.02 250)">Coastal north carolina · attached new construction · investor board</div>
+        </div>
+        <div style="font-size:25px;font-weight:600;letter-spacing:-0.02em;line-height:1.1">Townhome Builder &amp; Investment Board</div>
+        <div style="font-size:13px;color:oklch(0.76 0.015 250);max-width:660px;text-wrap:pretty">Every builder selling, building or permitting attached product from Brunswick County to Currituck, tiered on an eight-factor rental model you can re-weight yourself. Ceiling set at <strong style="color:oklch(0.93 0.01 85);font-weight:600">$250,000</strong> — anything above is shown and flagged, not hidden.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:stretch">
+        <div style="background:oklch(0.26 0.02 250);border:1px solid oklch(0.34 0.02 250);border-radius:8px;padding:9px 13px;display:flex;flex-direction:column;gap:3px;min-width:124px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.70 0.02 250)">Data as of</div>
+          <div style="font-size:13.5px;font-weight:600">{{ asOf }}</div>
+        </div>
+        <div style="background:oklch(0.26 0.02 250);border:1px solid oklch(0.34 0.02 250);border-radius:8px;padding:9px 13px;display:flex;flex-direction:column;gap:3px;min-width:124px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.70 0.02 250)">Baseline 30-yr</div>
+          <div style="font-size:13.5px;font-weight:600">{{ marketRateLabel }} <span style="font-weight:400;color:oklch(0.72 0.02 250);font-size:11px">owner-occ</span></div>
+        </div>
+        <div style="background:oklch(0.26 0.02 250);border:1px solid oklch(0.34 0.02 250);border-radius:8px;padding:9px 13px;display:flex;flex-direction:column;gap:3px;min-width:124px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.70 0.02 250)">Investment loan</div>
+          <div style="font-size:13.5px;font-weight:600">{{ investRateLabel }} <span style="font-weight:400;color:oklch(0.72 0.02 250);font-size:11px">non-owner</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:2px;margin-top:16px">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+        <div onClick="{{ t.onClick }}" style="padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px 8px 0 0;background:{{ t.bg }};color:{{ t.color }};display:flex;align-items:center;gap:8px" style-hover="opacity:0.92">
+          <span>{{ t.label }}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;opacity:0.6">{{ t.count }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding:20px 26px 0;display:flex;flex-direction:column;gap:14px;min-width:1580px">
+
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;padding:13px 14px;display:flex;flex-direction:column;gap:6px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">{{ k.label }}</div>
+          <div style="font-size:26px;font-weight:600;letter-spacing:-0.03em;line-height:1;color:{{ k.color }}">{{ k.value }}</div>
+          <div style="font-size:11px;color:oklch(0.56 0.015 250);line-height:1.35;text-wrap:pretty">{{ k.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:13px">
+      <div style="display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Tier by strategy</div>
+          <div style="display:flex;background:oklch(0.955 0.006 85);border:1px solid oklch(0.90 0.008 85);border-radius:8px;padding:3px;gap:3px">
+            <sc-for list="{{ strategies }}" as="s" hint-placeholder-count="3">
+              <div onClick="{{ s.onClick }}" style="padding:7px 15px;font-size:12.5px;font-weight:500;border-radius:6px;cursor:pointer;background:{{ s.bg }};color:{{ s.color }};white-space:nowrap">{{ s.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px;min-width:250px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Price ceiling</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">{{ priceCapLabel }}</div>
+          </div>
+          <input type="range" min="180000" max="320000" step="5000" value="{{ priceCap }}" onChange="{{ onCap }}" onInput="{{ onCap }}" style="width:100%;margin:0" />
+          <div style="display:flex;gap:4px">
+            <sc-for list="{{ capModes }}" as="c" hint-placeholder-count="3">
+              <div onClick="{{ c.onClick }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 8px;border-radius:5px;cursor:pointer;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }}">{{ c.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Filters</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="4">
+              <div onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }}">
+                <span style="width:14px;height:14px;border-radius:4px;border:1.5px solid {{ t.boxBorder }};background:{{ t.boxBg }};display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700">{{ t.mark }}</span>
+                <span>{{ t.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px;flex:1;min-width:190px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Search</div>
+          <input type="text" value="{{ query }}" onChange="{{ onQuery }}" onInput="{{ onQuery }}" placeholder="Community, builder, town, county…" style="font-family:'Archivo',sans-serif;font-size:13px;padding:8px 11px;border:1px solid oklch(0.88 0.008 85);border-radius:7px;background:oklch(0.985 0.004 85);color:oklch(0.26 0.015 250);outline:none;width:100%" />
+        </div>
+      </div>
+
+      <div style="border-top:1px solid oklch(0.93 0.008 85);padding-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250);margin-right:4px">Submarkets</div>
+        <sc-for list="{{ marketChips }}" as="m" hint-placeholder-count="12">
+          <div onClick="{{ m.onClick }}" style="padding:6px 11px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;border:1px solid {{ m.border }};background:{{ m.bg }};color:{{ m.color }};display:flex;align-items:center;gap:7px">
+            <span>{{ m.label }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;opacity:0.65">{{ m.count }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:236px minmax(890px,1fr) 376px;gap:14px;align-items:start">
+
+      <div style="display:flex;flex-direction:column;gap:8px;position:sticky;top:176px">
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;overflow:hidden">
+          <div style="padding:11px 13px;border-bottom:1px solid oklch(0.93 0.008 85);display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Builder toggle</div>
+            <div style="font-size:11px;color:oklch(0.56 0.015 250)">One click isolates the whole board.</div>
+          </div>
+          <div style="max-height:46vh;overflow-y:auto">
+            <sc-for list="{{ builderRows }}" as="b" hint-placeholder-count="15">
+              <div onClick="{{ b.onClick }}" style="padding:9px 12px;border-bottom:1px solid oklch(0.955 0.006 85);cursor:pointer;display:flex;gap:9px;align-items:center;background:{{ b.bg }}" style-hover="background:oklch(0.965 0.006 85)">
+                <div style="width:26px;height:26px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;background:{{ b.chipBg }};color:{{ b.chipColor }}">{{ b.mono }}</div>
+                <div style="display:flex;flex-direction:column;gap:1px;min-width:0;flex:1">
+                  <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ b.nameColor }}">{{ b.name }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.58 0.015 250)">{{ b.meta }}</div>
+                </div>
+                <div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:{{ b.dot }}"></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Scoring model</div>
+            <div onClick="{{ onResetWeights }}" style="font-family:'IBM Plex Mono',monospace;font-size:9px;cursor:pointer;color:oklch(0.50 0.10 240)">reset</div>
+          </div>
+          <div style="font-size:11px;color:oklch(0.50 0.015 250);line-height:1.4;text-wrap:pretty">{{ weightLabel }} — drag any factor and every tier, pin and rank on the board recomputes.</div>
+          <sc-for list="{{ weightSliders }}" as="w" hint-placeholder-count="8">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                <span style="font-size:10.5px;color:oklch(0.40 0.015 250);line-height:1.2">{{ w.label }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:{{ w.color }}">{{ w.display }}</span>
+              </div>
+              <input type="range" min="0" max="35" step="1" value="{{ w.value }}" onChange="{{ w.onChange }}" onInput="{{ w.onChange }}" style="width:100%;margin:0;height:14px" />
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:oklch(0.955 0.006 85);border:1px dashed oklch(0.86 0.01 85);border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:7px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.50 0.015 250)">Confidence legend</div>
+          <sc-for list="{{ legend }}" as="l" hint-placeholder-count="3">
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <span style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;background:{{ l.color }}"></span>
+              <div style="font-size:10.5px;line-height:1.4;color:oklch(0.44 0.015 250)"><strong style="font-weight:600">{{ l.label }}</strong> — {{ l.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;padding:15px 17px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:11px">
+            <div>
+              <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em">Tiered map — Brunswick to Currituck</div>
+              <div style="font-size:11.5px;color:oklch(0.56 0.015 250)">{{ mapSubtitle }}</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <sc-for list="{{ tierLegend }}" as="t" hint-placeholder-count="3">
+                <div style="display:flex;gap:6px;align-items:center">
+                  <span style="width:10px;height:10px;border-radius:50%;background:{{ t.color }}"></span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:oklch(0.44 0.015 250)">{{ t.label }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="width:10px;height:10px;border-radius:50%;background:transparent;border:2px solid oklch(0.58 0.12 78)"></span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:oklch(0.44 0.015 250)">investor-eligible</span>
+              </div>
+            </div>
+          </div>
+          <x-import component-from-global-scope="coastal-map" from="./coastal-map.js" points="{{ mapPointsJson }}" height="430px" hint-size="100%,430px"></x-import>
+        </div>
+
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;padding:15px 17px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px">
+            <div>
+              <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em">Opportunity plot</div>
+              <div style="font-size:11.5px;color:oklch(0.56 0.015 250)">{{ plotSubtitle }}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <div style="display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:2px 0 22px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.60 0.015 250);height:288px">
+              <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+            </div>
+            <div style="flex:1;position:relative;height:288px;border-left:1px solid oklch(0.88 0.008 85);border-bottom:1px solid oklch(0.88 0.008 85)">
+              <div style="position:absolute;left:0;right:0;top:24%;border-top:1px dashed oklch(0.93 0.008 85)"></div>
+              <div style="position:absolute;left:0;right:0;top:38%;border-top:1px dashed oklch(0.90 0.02 240)"></div>
+              <div style="position:absolute;left:0;right:0;top:50%;border-top:1px dashed oklch(0.93 0.008 85)"></div>
+              <div style="position:absolute;left:0;right:0;top:75%;border-top:1px dashed oklch(0.93 0.008 85)"></div>
+              <div style="position:absolute;top:0;bottom:0;left:{{ capLinePct }};border-left:1.5px solid oklch(0.55 0.11 55);pointer-events:none">
+                <div style="position:absolute;top:4px;left:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.50 0.11 55);white-space:nowrap;background:#fff;padding:1px 4px;border-radius:3px">cap {{ priceCapLabel }}</div>
+              </div>
+              <sc-for list="{{ plotPoints }}" as="p" hint-placeholder-count="20">
+                <div onClick="{{ p.onClick }}" title="{{ p.title }}" style="position:absolute;left:{{ p.x }};bottom:{{ p.y }};width:{{ p.size }};height:{{ p.size }};margin-left:{{ p.off }};margin-bottom:{{ p.off }};border-radius:50%;background:{{ p.fill }};border:{{ p.ring }};cursor:pointer;transition:transform 0.12s ease" style-hover="transform:scale(1.4);z-index:5"></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding-left:34px;margin-top:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.60 0.015 250)">
+            <span>$195k</span><span>$225k</span><span>$255k</span><span>$285k</span>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;overflow:hidden">
+          <div style="padding:13px 16px;border-bottom:1px solid oklch(0.93 0.008 85)">
+            <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em">Tier leaderboard</div>
+            <div style="font-size:11.5px;color:oklch(0.56 0.015 250)">Ranked on your current weights. Each stacked bar shows which factors are actually earning the score.</div>
+          </div>
+          <sc-for list="{{ leaders }}" as="l" hint-placeholder-count="8">
+            <div onClick="{{ l.onClick }}" style="padding:11px 16px;border-bottom:1px solid oklch(0.958 0.006 85);cursor:pointer;display:grid;grid-template-columns:26px 1.7fr 1.5fr 62px;gap:13px;align-items:center;background:{{ l.bg }}" style-hover="background:oklch(0.965 0.008 240)">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ l.rankColor }}">{{ l.rank }}</div>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.name }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.58 0.015 250);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.sub }}</div>
+              </div>
+              <div style="display:flex;height:11px;border-radius:3px;overflow:hidden;background:oklch(0.95 0.006 85)">
+                <sc-for list="{{ l.bars }}" as="b" hint-placeholder-count="8">
+                  <div title="{{ b.title }}" style="width:{{ b.w }};background:{{ b.color }};height:100%"></div>
+                </sc-for>
+              </div>
+              <div style="text-align:right">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;line-height:1;color:{{ l.scoreColor }}">{{ l.score }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:oklch(0.58 0.015 250)">{{ l.tier }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="padding:9px 16px;display:flex;gap:11px;flex-wrap:wrap;background:oklch(0.968 0.006 85)">
+            <sc-for list="{{ factorKey }}" as="f" hint-placeholder-count="8">
+              <div style="display:flex;gap:5px;align-items:center">
+                <span style="width:8px;height:8px;border-radius:2px;background:{{ f.color }}"></span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.46 0.015 250)">{{ f.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;overflow:hidden">
+          <div style="padding:13px 16px;border-bottom:1px solid oklch(0.93 0.008 85);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em">{{ tableTitle }}</div>
+              <div style="font-size:11.5px;color:oklch(0.56 0.015 250)">{{ tableSubtitle }}</div>
+            </div>
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Sort</span>
+              <sc-for list="{{ sortChips }}" as="s" hint-placeholder-count="7">
+                <div onClick="{{ s.onClick }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 9px;border-radius:5px;cursor:pointer;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.color }}">{{ s.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:2.2fr 1.15fr 1.15fr 0.9fr 0.74fr 0.5fr 0.5fr 0.55fr 1.75fr;gap:0;padding:8px 16px;background:oklch(0.965 0.006 85);border-bottom:1px solid oklch(0.90 0.008 85);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.48 0.015 250)">
+            <div>Community</div><div>Builder</div><div>Submarket</div><div>Status</div><div style="text-align:right">From</div><div style="text-align:right">STR</div><div style="text-align:right">LTR</div><div style="text-align:center">Tier</div><div>Incentive</div>
+          </div>
+
+          <div>
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="14">
+              <div onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:2.2fr 1.15fr 1.15fr 0.9fr 0.74fr 0.5fr 0.5fr 0.55fr 1.75fr;gap:0;padding:10px 16px;border-bottom:1px solid oklch(0.958 0.006 85);cursor:pointer;align-items:center;background:{{ r.bg }};border-left:3px solid {{ r.accent }}" style-hover="background:oklch(0.965 0.008 240)">
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0;padding-right:10px">
+                  <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.58 0.015 250);display:flex;gap:6px;align-items:center">
+                    <span style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:{{ r.confColor }}"></span>
+                    <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.units }}</span>
+                  </div>
+                </div>
+                <div style="font-size:12px;color:oklch(0.40 0.015 250);padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.builder }}</div>
+                <div style="font-size:12px;color:oklch(0.40 0.015 250);padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.town }}</div>
+                <div><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;padding:3px 6px;border-radius:4px;background:{{ r.statusBg }};color:{{ r.statusColor }};white-space:nowrap">{{ r.status }}</span></div>
+                <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:{{ r.priceColor }}">{{ r.price }}</span>
+                  <sc-if value="{{ r.over }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.06em;padding:1px 4px;border-radius:3px;background:oklch(0.94 0.05 60);color:oklch(0.45 0.12 55)">OVER</span>
+                  </sc-if>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:right;color:oklch(0.40 0.015 250)">{{ r.str }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:right;color:oklch(0.40 0.015 250)">{{ r.ltr }}</div>
+                <div style="text-align:center"><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;padding:3px 7px;border-radius:4px;background:{{ r.tierBg }};color:{{ r.tierColor }}">{{ r.tier }}</span></div>
+                <div style="font-size:10.5px;line-height:1.3;color:{{ r.promoColor }};display:flex;gap:5px;align-items:center;padding-left:6px;min-width:0">
+                  <span style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:{{ r.promoDot }}"></span>
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.promo }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:34px 16px;text-align:center;font-size:13px;color:oklch(0.56 0.015 250)">No communities match these filters. Loosen the price ceiling or clear a submarket.</div>
+          </sc-if>
+        </div>
+
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;overflow:hidden">
+          <div style="padding:13px 16px;border-bottom:1px solid oklch(0.93 0.008 85)">
+            <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em">Rate &amp; incentive tracker</div>
+            <div style="font-size:11.5px;color:oklch(0.56 0.015 250)">Sorted by dollar value of the concession. Gold entries survive an investment-property contract — the rest are owner-occupant traps.</div>
+          </div>
+          <sc-for list="{{ promoRows }}" as="p" hint-placeholder-count="10">
+            <div onClick="{{ p.onClick }}" style="padding:12px 16px;border-bottom:1px solid oklch(0.958 0.006 85);cursor:pointer;display:grid;grid-template-columns:1.5fr 1.6fr 0.8fr 0.85fr 1fr;gap:14px;align-items:center;background:{{ p.bg }}" style-hover="background:oklch(0.965 0.008 240)">
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:oklch(0.58 0.015 250)">{{ p.builder }}</div>
+              </div>
+              <div style="font-size:11.5px;line-height:1.4;color:oklch(0.38 0.015 250);text-wrap:pretty">{{ p.terms }}</div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Eff. rate</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:oklch(0.44 0.10 240)">{{ p.rate }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Value</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600">{{ p.value }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:{{ p.expColor }}">{{ p.expires }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 5px;border-radius:3px;background:{{ p.invBg }};color:{{ p.invColor }}">{{ p.invLabel }}</span>
+                </div>
+                <div style="height:4px;border-radius:3px;background:oklch(0.93 0.008 85);overflow:hidden">
+                  <div style="height:100%;width:{{ p.expPct }};background:{{ p.expColor }}"></div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:oklch(0.20 0.02 250);border-radius:10px;padding:15px 17px;display:flex;flex-direction:column;gap:11px;color:oklch(0.94 0.005 85)">
+          <div>
+            <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em">Coverage gaps worth knowing</div>
+            <div style="font-size:11.5px;color:oklch(0.76 0.015 250)">Places an investor will look for sub-$250k attached product and not find any. Knowing where the product isn't saves weeks.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+            <sc-for list="{{ gaps }}" as="g" hint-placeholder-count="4">
+              <div style="background:oklch(0.26 0.02 250);border-radius:8px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+                <div style="font-size:12.5px;font-weight:600">{{ g.area }}</div>
+                <div style="font-size:11px;line-height:1.45;color:oklch(0.80 0.015 250);text-wrap:pretty">{{ g.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:176px;max-height:calc(100vh - 194px);overflow-y:auto;padding-right:2px">
+        <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;overflow:hidden">
+          <div style="padding:14px 15px;background:oklch(0.22 0.02 250);color:oklch(0.96 0.005 85);display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.74 0.02 250)">{{ sel.builder }}</div>
+                <div style="font-size:17px;font-weight:600;letter-spacing:-0.015em;line-height:1.2">{{ sel.name }}</div>
+                <div style="font-size:11.5px;color:oklch(0.78 0.015 250);text-wrap:pretty">{{ sel.locLine }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:4px 8px;border-radius:5px;background:{{ sel.tierBg }};color:{{ sel.tierColor }}">{{ sel.tier }}</span>
+                <span onClick="{{ sel.onPin }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;padding:4px 8px;border-radius:5px;cursor:pointer;border:1px solid {{ sel.pinBorder }};background:{{ sel.pinBg }};color:{{ sel.pinColor }}">{{ sel.pinLabel }}</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+              <sc-for list="{{ sel.heroStats }}" as="h" hint-placeholder-count="4">
+                <div style="background:oklch(0.28 0.02 250);border-radius:7px;padding:8px 9px;display:flex;flex-direction:column;gap:2px">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.72 0.02 250)">{{ h.label }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600">{{ h.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;border-bottom:1px solid oklch(0.93 0.008 85)">
+            <sc-for list="{{ panelTabs }}" as="t" hint-placeholder-count="5">
+              <div onClick="{{ t.onClick }}" style="flex:1;text-align:center;padding:10px 3px;font-size:11.5px;font-weight:500;cursor:pointer;border-bottom:2px solid {{ t.border }};color:{{ t.color }};background:{{ t.bg }}">{{ t.label }}</div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ tabPlans }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:13px 15px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Floorplans in this community</div>
+              <sc-for list="{{ sel.plans }}" as="p" hint-placeholder-count="3">
+                <div onClick="{{ p.onClick }}" style="border:1px solid {{ p.border }};background:{{ p.bg }};border-radius:8px;padding:10px 11px;cursor:pointer;display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+                    <div style="font-size:13px;font-weight:600">{{ p.name }}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ p.priceColor }}">{{ p.price }}</div>
+                  </div>
+                  <div style="display:flex;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:oklch(0.52 0.015 250);flex-wrap:wrap">
+                    <span>{{ p.beds }} bd</span><span>{{ p.baths }} ba</span><span>{{ p.sqft }} sf</span><span>{{ p.ppsf }}/sf</span>
+                  </div>
+                  <div style="height:3px;border-radius:2px;background:oklch(0.94 0.008 85);overflow:hidden">
+                    <div style="height:100%;width:{{ p.bar }};background:{{ p.barColor }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="border-top:1px solid oklch(0.95 0.006 85);padding-top:10px;display:flex;flex-direction:column;gap:6px">
+                <sc-for list="{{ sel.specRows }}" as="s" hint-placeholder-count="9">
+                  <div style="display:flex;justify-content:space-between;gap:12px;font-size:11.5px">
+                    <span style="color:oklch(0.54 0.015 250)">{{ s.label }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;text-align:right">{{ s.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabRental }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:13px 15px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Factor scores · weight in your model</div>
+                <sc-for list="{{ sel.factors }}" as="f" hint-placeholder-count="8">
+                  <div style="display:flex;flex-direction:column;gap:3px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+                      <span style="font-size:11px;color:oklch(0.40 0.015 250)">{{ f.label }}</span>
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:oklch(0.52 0.015 250)">{{ f.value }} · <span style="font-weight:600;color:{{ f.color }}">{{ f.weight }}</span></span>
+                    </div>
+                    <div style="height:5px;border-radius:3px;background:oklch(0.95 0.006 85);overflow:hidden">
+                      <div style="height:100%;width:{{ f.bar }};background:{{ f.color }}"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-for list="{{ sel.scoreCards }}" as="c" hint-placeholder-count="2">
+                <div style="border:1px solid oklch(0.92 0.008 85);border-radius:8px;padding:11px 12px;display:flex;flex-direction:column;gap:9px">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="font-size:12.5px;font-weight:600">{{ c.title }}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;color:{{ c.color }}">{{ c.score }}</div>
+                  </div>
+                  <div style="height:6px;border-radius:4px;background:oklch(0.94 0.008 85);overflow:hidden">
+                    <div style="height:100%;width:{{ c.bar }};background:{{ c.color }}"></div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:5px">
+                    <sc-for list="{{ c.drivers }}" as="d" hint-placeholder-count="3">
+                      <div style="display:flex;gap:8px;align-items:flex-start">
+                        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:1px 4px;border-radius:3px;margin-top:1px;flex-shrink:0;background:{{ d.bg }};color:{{ d.color }}">{{ d.tag }}</span>
+                        <span style="font-size:11px;line-height:1.4;color:oklch(0.40 0.015 250);text-wrap:pretty">{{ d.text }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="background:oklch(0.965 0.006 85);border-radius:8px;padding:11px 12px;display:flex;flex-direction:column;gap:8px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.50 0.015 250)">Rules that decide the strategy</div>
+                <sc-for list="{{ sel.ruleRows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <div style="font-size:11px;font-weight:600;color:oklch(0.34 0.015 250)">{{ r.label }}</div>
+                    <div style="font-size:11px;line-height:1.45;color:oklch(0.46 0.015 250);text-wrap:pretty">{{ r.value }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabIncentive }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:13px 15px;display:flex;flex-direction:column;gap:11px">
+              <div style="border:1px solid {{ sel.promoBorder }};background:{{ sel.promoBg }};border-radius:8px;padding:12px 13px;display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                  <div style="font-size:13px;font-weight:600;line-height:1.3">{{ sel.promoTitle }}</div>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 6px;border-radius:4px;flex-shrink:0;background:{{ sel.promoInvBg }};color:{{ sel.promoInvColor }}">{{ sel.promoInvLabel }}</span>
+                </div>
+                <div style="font-size:11.5px;line-height:1.45;color:oklch(0.38 0.015 250);text-wrap:pretty">{{ sel.promoTerms }}</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <sc-for list="{{ sel.promoStats }}" as="s" hint-placeholder-count="3">
+                    <div style="display:flex;flex-direction:column;gap:2px">
+                      <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.54 0.015 250)">{{ s.label }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ s.color }}">{{ s.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Investor gates to clear</div>
+                <sc-for list="{{ sel.flagRows }}" as="f" hint-placeholder-count="5">
+                  <div style="display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:7px;background:{{ f.bg }}">
+                    <span style="width:15px;height:15px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;background:{{ f.color }}">{{ f.mark }}</span>
+                    <div style="display:flex;flex-direction:column;gap:1px">
+                      <div style="font-size:11.5px;font-weight:600">{{ f.label }}</div>
+                      <div style="font-size:10.5px;line-height:1.4;color:oklch(0.46 0.015 250);text-wrap:pretty">{{ f.note }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabMath }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:13px 15px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;background:oklch(0.955 0.006 85);border:1px solid oklch(0.91 0.008 85);border-radius:7px;padding:3px;gap:3px">
+                <sc-for list="{{ calcModes }}" as="m" hint-placeholder-count="2">
+                  <div onClick="{{ m.onClick }}" style="flex:1;text-align:center;padding:6px 8px;font-size:11.5px;font-weight:500;border-radius:5px;cursor:pointer;background:{{ m.bg }};color:{{ m.color }}">{{ m.label }}</div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+                <sc-for list="{{ calcOut }}" as="o" hint-placeholder-count="4">
+                  <div style="border:1px solid oklch(0.92 0.008 85);border-radius:8px;padding:10px 11px;display:flex;flex-direction:column;gap:3px">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.54 0.015 250)">{{ o.label }}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:-0.02em;color:{{ o.color }}">{{ o.value }}</div>
+                    <div style="font-size:10px;color:oklch(0.56 0.015 250);line-height:1.3;text-wrap:pretty">{{ o.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:11px;border-top:1px solid oklch(0.94 0.008 85);padding-top:11px">
+                <sc-for list="{{ calcSliders }}" as="s" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:5px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline">
+                      <span style="font-size:11.5px;color:oklch(0.42 0.015 250)">{{ s.label }}</span>
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600">{{ s.display }}</span>
+                    </div>
+                    <input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.value }}" onChange="{{ s.onChange }}" onInput="{{ s.onChange }}" style="width:100%;margin:0" />
+                  </div>
+                </sc-for>
+                <div onClick="{{ onTogglePromoRate }}" style="display:flex;gap:9px;align-items:center;padding:9px 11px;border-radius:7px;cursor:pointer;border:1px solid {{ promoRateBorder }};background:{{ promoRateBg }}">
+                  <span style="width:15px;height:15px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;background:{{ promoRateColor }}">{{ promoRateMark }}</span>
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <div style="font-size:11.5px;font-weight:600">Apply builder buydown rate</div>
+                    <div style="font-size:10.5px;line-height:1.35;color:oklch(0.46 0.015 250);text-wrap:pretty">{{ promoRateNote }}</div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid oklch(0.94 0.008 85);padding-top:11px">
+                <sc-for list="{{ calcLines }}" as="l" hint-placeholder-count="9">
+                  <div style="display:flex;justify-content:space-between;gap:12px;font-size:11.5px;padding:2px 0;border-bottom:1px dotted {{ l.rule }}">
+                    <span style="color:{{ l.labelColor }};font-weight:{{ l.weight }}">{{ l.label }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-weight:{{ l.weight }};color:{{ l.color }}">{{ l.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabBuilder }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:13px 15px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                  <div style="font-size:14px;font-weight:600">{{ bld.name }}</div>
+                  <div style="font-size:11px;color:oklch(0.54 0.015 250);text-wrap:pretty">{{ bld.scope }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;line-height:1;color:{{ bld.qColor }}">{{ bld.quality }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.55 0.015 250)">build score</div>
+                </div>
+              </div>
+              <div style="background:oklch(0.965 0.006 85);border-radius:8px;padding:11px 12px;font-size:11.5px;line-height:1.5;color:oklch(0.36 0.015 250);text-wrap:pretty">{{ bld.sentiment }}</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <sc-for list="{{ bld.rows }}" as="r" hint-placeholder-count="7">
+                  <div style="display:flex;justify-content:space-between;gap:12px;font-size:11.5px;padding:2px 0;border-bottom:1px dotted oklch(0.93 0.008 85)">
+                    <span style="color:oklch(0.54 0.015 250)">{{ r.label }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;text-align:right">{{ r.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="border:1px solid oklch(0.92 0.008 85);border-radius:8px;padding:11px 12px;display:flex;flex-direction:column;gap:6px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.55 0.015 250)">Sales office</div>
+                <div style="font-size:11.5px;line-height:1.45;color:oklch(0.38 0.015 250);text-wrap:pretty">{{ bld.office }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:oklch(0.50 0.10 240)">{{ bld.web }}</div>
+                <div style="font-size:10.5px;line-height:1.4;color:oklch(0.56 0.015 250);text-wrap:pretty">Phone numbers and agent assignments rotate too often to publish here — call the builder's main line or the listing office and ask for the on-site agent by community name.</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ hasPins }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid oklch(0.90 0.008 85);border-radius:10px;overflow:hidden">
+            <div style="padding:11px 13px;border-bottom:1px solid oklch(0.93 0.008 85);display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:13px;font-weight:600">Side-by-side ({{ pinCount }} of 3)</div>
+              <div onClick="{{ onClearPins }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;cursor:pointer;color:oklch(0.50 0.13 25)">clear</div>
+            </div>
+            <div>
+              <sc-for list="{{ compareRows }}" as="c" hint-placeholder-count="10">
+                <div style="display:grid;grid-template-columns:0.9fr 1fr 1fr 1fr;gap:8px;padding:7px 13px;border-bottom:1px solid oklch(0.96 0.006 85);align-items:center">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.52 0.015 250)">{{ c.label }}</div>
+                  <sc-for list="{{ c.cells }}" as="v" hint-placeholder-count="3">
+                    <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:{{ v.weight }};color:{{ v.color }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.text }}</div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="background:oklch(0.955 0.006 85);border:1px dashed oklch(0.86 0.01 85);border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:6px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.50 0.015 250)">How to read this board</div>
+          <div style="font-size:11px;line-height:1.5;color:oklch(0.42 0.015 250);text-wrap:pretty">Community names, builders and submarkets are drawn from current builder and listing sources. Base prices, incentive terms, nightly rates, occupancy and rents are researched estimates for August 2026 and move weekly — confirm every number with the sales office and a lender before you write an offer. County geometry is real US Census data. Nothing here is a rate lock, an appraisal, or tax advice.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;priceCap&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:250000,&quot;min&quot;:180000,&quot;max&quot;:320000,&quot;step&quot;:5000,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Scope&quot;,&quot;unit&quot;:&quot;$&quot;},&quot;investorOnly&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Scope&quot;},&quot;hidePlanned&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Scope&quot;}}">
+const MK = {
+  LEL: { name: 'Leland', county: 'Brunswick', tax: 0.0072, ins: 132, occTax: '6%', reg: 78, season: 62, ltrD: 86, appr: 58,
+    strRule: 'Town of Leland and unincorporated Brunswick County impose no STR permit — the recorded HOA declaration is the binding constraint here, not the town.',
+    ltrDriver: 'Wilmington commute (13 min to downtown), ILM 18 min, Novant and PPD employment base. Deepest tenant pool in Brunswick County.',
+    strNote: 'Beach is a 24–28 min drive. Nightly demand is Wilmington spillover, not waterfront — expect weekday vacancy.' },
+  CAL: { name: 'Calabash / Sunset Bch', county: 'Brunswick', tax: 0.0074, ins: 171, occTax: '6%', reg: 88, season: 58, ltrD: 52, appr: 72,
+    strRule: 'STR permitted; town business registration plus a county occupancy-tax account. No cap, no lottery, no inspection regime.',
+    ltrDriver: 'Thin year-round tenant pool — retirees and the Myrtle Beach hospitality workforce. Underwrite LTR conservatively.',
+    strNote: 'Sunset Beach and Ocean Isle 10–14 min; North Myrtle demand spills north on peak weekends.' },
+  SHA: { name: 'Shallotte', county: 'Brunswick', tax: 0.0073, ins: 158, occTax: '6%', reg: 82, season: 60, ltrD: 62, appr: 70,
+    strRule: 'Town of Shallotte allows STR in most residential districts; county occupancy tax applies.',
+    ltrDriver: 'Novant Brunswick Medical Center, the US-17 retail corridor, and regional trades workforce.',
+    strNote: 'Ocean Isle Beach 18 min — mainland pricing at beach-adjacent nightly rates.' },
+  SOU: { name: 'Southport / BSL', county: 'Brunswick', tax: 0.0075, ins: 174, occTax: '6%', reg: 74, season: 64, ltrD: 64, appr: 74,
+    strRule: 'Southport regulates by zoning district; Boiling Spring Lakes is permissive. City limits are irregular — verify the parcel, not the mailing address.',
+    ltrDriver: 'Brunswick Nuclear plant, marine trades, Wilmington reverse commute.',
+    strNote: 'Oak Island bridge 14 min, and historic downtown Southport is its own shoulder-season draw.' },
+  WIL: { name: 'Wilmington', county: 'New Hanover', tax: 0.0088, ins: 152, occTax: '6%', reg: 42, season: 74, ltrD: 92, appr: 80,
+    strRule: 'City STR permit via Development Services: life-safety inspection, $100 fee, a responsible party available 24/7 within 30 miles, and the permit number in every advertisement. Unpermitted operation runs to $500 per day.',
+    ltrDriver: 'UNCW, Novant NHRMC, and film production — the deepest and most liquid LTR market on the coast.',
+    strNote: 'Whole-house lodging is a separate, constrained category from homestays. Assume friction.' },
+  HAM: { name: 'Hampstead / Surf City', county: 'Pender', tax: 0.0079, ins: 179, occTax: '6%', reg: 68, season: 56, ltrD: 70, appr: 76,
+    strRule: 'Surf City permits inside town limits; a Hampstead mailing address is usually unincorporated Pender County zoning instead. Two different rulebooks.',
+    ltrDriver: 'Wilmington north-side commute, new Topsail schools, and a southbound Camp Lejeune commute.',
+    strNote: 'Topsail Island bridge 12–18 min. A genuine summer nightly market with real shoulder-season softness.' },
+  SNF: { name: 'Sneads Ferry', county: 'Onslow', tax: 0.0077, ins: 198, occTax: '6%', reg: 92, season: 66, ltrD: 88, appr: 78,
+    strRule: 'North Topsail Beach is among the most STR-permissive jurisdictions in the state. Flood zone and wind-hail deductibles, not permits, are the cost here.',
+    ltrDriver: 'Camp Lejeune main gate 15 min — BAH sets a hard rent floor twelve months a year.',
+    strNote: 'The rare dual-purpose submarket: a military lease floor underneath a real beach nightly ceiling.' },
+  JAX: { name: 'Jacksonville', county: 'Onslow', tax: 0.0084, ins: 138, occTax: '6%', reg: 70, season: 82, ltrD: 94, appr: 54,
+    strRule: 'STR is legal but nightly demand is thin and event-driven — graduations and PCS season. Mid-term furnished beats nightly here.',
+    ltrDriver: 'Camp Lejeune and MCAS New River — roughly 40,000 active duty. BAH-indexed rents and fast turns.',
+    strNote: 'Treat nightly upside as optional. Underwrite on the lease or do not buy.' },
+  NEW: { name: 'Newport / Morehead', county: 'Carteret', tax: 0.0076, ins: 186, occTax: '6%', reg: 66, season: 60, ltrD: 74, appr: 72,
+    strRule: 'Rules vary parcel to parcel across Newport, Morehead City and Beaufort. Confirm which jurisdiction the lot sits in before you go under contract.',
+    ltrDriver: 'MCAS Cherry Point, Carteret Health Care, and the marine-science institutions at Pivers Island.',
+    strNote: 'Crystal Coast beaches 15–20 min — Atlantic Beach nightly rates without island acquisition cost.' },
+  NBN: { name: 'New Bern', county: 'Craven', tax: 0.0082, ins: 142, occTax: '6%', reg: 55, season: 78, ltrD: 76, appr: 62,
+    strRule: 'City STR standards apply in the historic core; suburban product sees almost no nightly demand regardless of what is permitted.',
+    ltrDriver: 'CarolinaEast Health, the Cherry Point commute, and steady retiree in-migration.',
+    strNote: 'Underwrite as long-term only. The nightly case does not exist at this distance from water.' },
+  HAV: { name: 'Havelock', county: 'Craven', tax: 0.0080, ins: 152, occTax: '6%', reg: 68, season: 80, ltrD: 82, appr: 58,
+    strRule: 'Havelock permits STR by zoning district; Craven County governs outside city limits.',
+    ltrDriver: 'MCAS Cherry Point — the largest single employer in eastern North Carolina, and a BAH-indexed rent floor.',
+    strNote: 'Atlantic Beach 24 min. Nightly is secondary to the base lease market.' },
+  MOY: { name: 'Moyock / Currituck', county: 'Currituck', tax: 0.0048, ins: 168, occTax: '6%', reg: 72, season: 68, ltrD: 74, appr: 68,
+    strRule: 'Currituck mainland allows STR with a county permit. The Outer Banks beach districts are separately and far more strictly regulated — and out of this price band entirely.',
+    ltrDriver: 'Hampton Roads and Chesapeake commute — 25 min to the Virginia line. Lowest effective tax rate on the board.',
+    strNote: 'Corolla and the northern Outer Banks are 50–60 min. This is a commuter market with weekend overflow, not a beach market.' }
+};
+
+const BLD = {
+  'D.R. Horton': { q: 68, warranty: '1-2-10 (1yr workmanship, 2yr systems, 10yr structural)', web: 'drhorton.com', scope: 'National · Express, Freedom and Emerald series',
+    sent: 'Highest volume builder on the coast and the fastest to close. Punch-list follow-through after closing is the consistent complaint in Brunswick and Onslow reviews. The real advantage is DHI Mortgage: buydown leverage no local builder can match, which is also why the sticker price rarely moves.' },
+  'Lennar': { q: 72, warranty: '1-2-10', web: 'lennar.com', scope: 'National · Everything Included spec level',
+    sent: 'Appliance, blind and smart-home packages are standard rather than incentives, which removes upgrade surprises but also removes negotiating room. Warranty service is app-ticketed and visibly slower at peak closing volume.' },
+  'Dream Finders Homes': { q: 76, warranty: '1-2-10', web: 'dreamfindershomes.com', scope: 'Southeast regional · Brunswick County focus',
+    sent: 'Smaller footprint buys better site supervision than the top-two nationals. Pre-sale price locks have been honored through cost swings. Concessions are the most investor-flexible in the Calabash corridor.' },
+  'McKee Homes': { q: 82, warranty: '1-2-10 with a local warranty office', web: 'mckeehomes.com', scope: 'North Carolina regional · Fayetteville, Wilmington, Onslow',
+    sent: 'One of the strongest service reputations in the state at this price point — a local warranty office rather than a national call centre. Slower build cycles are the trade.' },
+  'True Homes': { q: 78, warranty: '2-10 structural with in-house service', web: 'truehomes.com', scope: 'Carolinas regional · 80+ plans, 23+ townhome plans',
+    sent: 'Value engineering is visible in the finishes but the structure and on-time closing record are solid. Study the standard-versus-option list line by line before comparing prices to a spec-heavy competitor.' },
+  'Caviness & Cates': { q: 80, warranty: '1-2-10', web: 'cavinessandcates.com', scope: 'Eastern NC regional · Onslow County specialist',
+    sent: 'Understands the VA and BAH buyer flow better than any national in Jacksonville, which shows up as clean, fast military closings. Small concession budgets, but the base prices are already the lowest on the board.' },
+  'H&H Homes': { q: 74, warranty: '1-2-10', web: 'hhhomes.com', scope: 'Eastern NC regional · military-market fluent',
+    sent: 'Fayetteville-based and fluent in military markets. Finish quality is mid-pack; the concession-to-price ratio in Jacksonville is the best reason to look.' },
+  'Adams Homes': { q: 66, warranty: '1-2-10', web: 'adamshomes.com', scope: 'Southeast regional · lowest price per sq ft',
+    sent: 'Prices low and concedes almost nothing — the price is the incentive. Standard finishes are thin and change orders are restricted. Right answer if your model needs basis, wrong one if it needs a rate buydown.' },
+  'Stevens Fine Homes': { q: 84, warranty: 'Local 1yr workmanship + 10yr structural', web: 'stevensfinehomes.com', scope: 'Wilmington boutique · New Hanover and Brunswick',
+    sent: 'Best finish quality in this price band and the most engaged local service. No captive lender means no buydown, and closeout inventory is firm on price. Buy for the asset, not the deal.' },
+  'Logan Homes': { q: 80, warranty: '1-2-10', web: 'loganhomes.com', scope: 'Coastal NC veteran · Brunswick and New Hanover',
+    sent: 'Decades in coastal Brunswick, and the detailing reflects it — better flashing, better envelope choices for salt exposure. Mixed reviews on communication during long build cycles.' },
+  'Bill Clark Homes': { q: 78, warranty: '1-2-10', web: 'billclarkhomes.com', scope: 'Eastern NC · Wilmington, Leland, Greenville',
+    sent: 'Long eastern-NC track record and solid structural reputation. Customer-service reviews are genuinely mixed — ask the sales office for two recent buyer references in the same phase.' },
+  'Windsor Homes': { q: 76, warranty: '2-10 structural', web: 'windsorhomesnc.com', scope: 'Eastern NC regional · New Bern and Greenville',
+    sent: 'Steady regional builder with realistic pricing for the New Bern market. Little nightly-rental relevance, but a clean long-term hold.' },
+  'Herrington Classic Homes': { q: 79, warranty: 'Local 1yr + 10yr structural', web: 'herringtonclassichomes.com', scope: 'Crystal Coast · Carteret County',
+    sent: 'Small-volume Carteret builder, high-touch process, good coastal envelope detailing. Expect longer timelines and fewer standing incentives than a national.' },
+  'Mungo Homes': { q: 77, warranty: '1-2-10', web: 'mungo.com', scope: 'Southeast regional · Berkshire Hathaway owned',
+    sent: 'Deep design-studio options and a well-run process, but pricing sits above this ceiling. Included as the near-miss reference for what an extra $20k buys in the same submarket.' },
+  'Onslow Bay Homes': { q: 75, warranty: 'Local 1yr + 10yr structural', web: 'ask the listing office', scope: 'Local developer-builder · Jacksonville only',
+    sent: 'Locally regarded Jacksonville developer-builder with strong absorption in its existing sections. Phase-one reservations price below every national in the market, which is the entire thesis.' }
+};
+
+const DATA = [
+  { id: 'dhi-gp', b: 'D.R. Horton', n: 'Grayson Park — Townes', mk: 'LEL', st: 'Selling', u: 96, r: 21, mos: 14, pl: 239900, ph: 259900, sl: 1418, sh: 1554, bd: '3–4', ba: '2.5', hoa: 92, bm: 25, adr: 164, occ: 0.45, rent: 1875, cf: 'V', lat: 34.2585, lng: -78.0402,
+    plans: [['Pearson', 3, 2.5, 1418, 239900], ['Mitchell', 4, 2.5, 1554, 254900], ['Norman duet', 3, 2.5, 1502, 259900]],
+    promo: { t: '3-2-1 buydown to 3.99% + closing credit', v: 14500, er: 3.99, x: '2026-09-30', inv: false, note: 'Requires the affiliated lender. Owner-occupant or second home only — an investment contract gets the cash credit at roughly half the stated value.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 0 } },
+  { id: 'dhi-sb', b: 'D.R. Horton', n: 'Townes at SeaBrooke', mk: 'LEL', st: 'Selling', u: 128, r: 34, mos: 17, pl: 234900, ph: 249900, sl: 1418, sh: 1418, bd: '3', ba: '2.5', hoa: 105, bm: 28, adr: 156, occ: 0.44, rent: 1850, cf: 'V', lat: 34.2261, lng: -78.0625,
+    plans: [['Pearson', 3, 2.5, 1418, 234900], ['Pearson end unit', 3, 2.5, 1418, 249900]],
+    promo: { t: 'Red Tag inventory event — flex cash', v: 12000, er: 4.49, x: '2026-09-15', inv: true, note: 'Quick move-in units only. Flex cash is usable as a rate buydown or closing costs, and has been honored on investment contracts in this section.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'dhi-ip', b: 'D.R. Horton', n: 'Indigo Preserve — Villas', mk: 'LEL', st: 'Under construction', u: 74, r: 58, mos: 5, pl: 244900, ph: 264900, sl: 1460, sh: 1640, bd: '3', ba: '2.5', hoa: 118, bm: 26, adr: 168, occ: 0.46, rent: 1925, cf: 'V', lat: 34.2412, lng: -78.0187,
+    plans: [['Aria villa', 3, 2.5, 1460, 244900], ['Bristol villa', 3, 2.5, 1640, 264900]],
+    promo: { t: '$10k use-as-you-choose', v: 10000, er: 4.99, x: '2026-10-31', inv: true, note: 'Applies to a rate buydown, closing costs or design credit. Investor eligible at 20% down through the affiliated lender.' },
+    flags: { llc: 1, cap: 0, lease: 1, occ: 1 } },
+  { id: 'dhi-ch', b: 'D.R. Horton', n: 'Coastal Haven Townhomes', mk: 'LEL', st: 'Selling', u: 120, r: 44, mos: 12, pl: 227900, ph: 242900, sl: 1352, sh: 1418, bd: '3', ba: '2.5', hoa: 98, bm: 28, adr: 152, occ: 0.43, rent: 1795, cf: 'V', lat: 34.2136, lng: -78.0298,
+    plans: [['Harbor', 3, 2.5, 1352, 227900], ['Pearson', 3, 2.5, 1418, 242900]],
+    promo: { t: 'Permanent buydown to 4.25% (30-yr fixed)', v: 16200, er: 4.25, x: '2026-09-30', inv: false, note: 'Builder-financed permanent buydown, primary residence only. The cash alternative for an investor is $8k — model it that way.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 0 } },
+  { id: 'dhi-cv', b: 'D.R. Horton', n: 'The Cove at Calabash', mk: 'CAL', st: 'Selling', u: 88, r: 31, mos: 13, pl: 229900, ph: 244900, sl: 1340, sh: 1466, bd: '3', ba: '2.5', hoa: 142, bm: 12, adr: 198, occ: 0.52, rent: 1650, cf: 'V', lat: 33.8907, lng: -78.5612,
+    plans: [['Sandpiper', 3, 2.5, 1340, 229900], ['Seagrass', 3, 2.5, 1466, 244900]],
+    promo: { t: 'Investor package — 2/1 buydown + year-one HOA', v: 13400, er: 4.75, x: '2026-11-30', inv: true, note: 'Explicitly marketed to second-home and rental buyers. Includes first-year HOA dues and a furniture allowance on standing inventory.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'dfh-cs', b: 'Dream Finders Homes', n: 'Calabash Station Towns', mk: 'CAL', st: 'Pre-sale', u: 64, r: 64, mos: 0, pl: 239990, ph: 254990, sl: 1404, sh: 1568, bd: '3', ba: '2.5', hoa: 135, bm: 13, adr: 192, occ: 0.51, rent: 1675, cf: 'V', lat: 33.8846, lng: -78.5738,
+    plans: [['Marlin', 3, 2.5, 1404, 239990], ['Tarpon', 3, 2.5, 1568, 254990]],
+    promo: { t: 'Pre-sale price lock + $8k closing', v: 8000, er: 5.25, x: '2026-12-15', inv: true, note: 'Price locked at contract for a nine-month build. No buydown pre-slab — renegotiate at 60 days from closing when the lender needs the loan.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'dfh-pc', b: 'Dream Finders Homes', n: 'Pelican Cove Towns', mk: 'CAL', st: 'Under construction', u: 52, r: 37, mos: 4, pl: 244990, ph: 259990, sl: 1440, sh: 1602, bd: '3', ba: '2.5', hoa: 148, bm: 11, adr: 206, occ: 0.53, rent: 1690, cf: 'V', lat: 33.8992, lng: -78.5481,
+    plans: [['Pelican', 3, 2.5, 1440, 244990], ['Osprey', 3, 2.5, 1602, 259990]],
+    promo: { t: '$15k flex + buydown to 4.99%', v: 15000, er: 4.99, x: '2026-09-30', inv: true, note: 'Deepest concession on the board that survives an investment contract. Affiliated lender required for the full amount.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'len-tw', b: 'Lennar', n: 'Tidewater at Osprey Isle', mk: 'HAM', st: 'Selling', u: 112, r: 40, mos: 11, pl: 249990, ph: 274990, sl: 1486, sh: 1712, bd: '3', ba: '2.5', hoa: 162, bm: 16, adr: 208, occ: 0.50, rent: 2100, cf: 'V', lat: 34.3712, lng: -77.7104,
+    plans: [['Chatham', 3, 2.5, 1486, 249990], ['Halifax', 3, 2.5, 1712, 274990]],
+    promo: { t: 'Everything Included + 4.75% buydown', v: 17500, er: 4.75, x: '2026-10-15', inv: false, note: 'The appliance and blind package is standard spec, not a concession. The buydown is primary-residence only through the in-house lender.' },
+    flags: { llc: 1, cap: 1, lease: 0, occ: 0 } },
+  { id: 'len-tt', b: 'Lennar', n: 'The Towns at Terrapin', mk: 'LEL', st: 'Under construction', u: 148, r: 96, mos: 6, pl: 246990, ph: 269990, sl: 1502, sh: 1688, bd: '3', ba: '2.5', hoa: 155, bm: 24, adr: 172, occ: 0.45, rent: 1975, cf: 'V', lat: 34.2708, lng: -78.0561,
+    plans: [['Wren', 3, 2.5, 1502, 246990], ['Heron', 3, 2.5, 1688, 269990]],
+    promo: { t: 'Closing cost credit up to $12k', v: 12000, er: 5.50, x: '2026-11-30', inv: true, note: 'Credit scales with loan amount. Investment loans qualify at about 1.5% of purchase price rather than the headline number.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'len-sr', b: 'Lennar', n: 'Sunset Ridge Villas', mk: 'CAL', st: 'Planned 2027', u: 80, r: 80, mos: 0, pl: 249990, ph: 269990, sl: 1480, sh: 1640, bd: '3', ba: '2.5', hoa: 158, bm: 9, adr: 212, occ: 0.54, rent: 1700, cf: 'M', lat: 33.8801, lng: -78.5089,
+    plans: [['Dune', 3, 2.5, 1480, 249990], ['Cabana', 3, 2.5, 1640, 269990]],
+    promo: null, flags: { llc: 1, cap: 0, lease: 0, occ: 1 } },
+  { id: 'cav-te', b: 'Caviness & Cates', n: 'Tides End Townes', mk: 'JAX', st: 'Selling', u: 84, r: 29, mos: 15, pl: 209900, ph: 229900, sl: 1288, sh: 1452, bd: '3', ba: '2.5', hoa: 78, bm: 35, adr: 128, occ: 0.37, rent: 1725, cf: 'V', lat: 34.7462, lng: -77.4189,
+    plans: [['Franklin', 3, 2.5, 1288, 209900], ['Ashton', 3, 2.5, 1452, 229900]],
+    promo: { t: '$3k use-as-you-choose + 1% lender credit', v: 5300, er: 5.75, x: '2026-09-30', inv: true, note: 'Small but genuinely unrestricted — buydown, closing costs or vendor credit. The preferred lender adds 1% of the loan amount on top.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'hh-cl', b: 'H&H Homes', n: 'Cypress Landing Towns', mk: 'JAX', st: 'Under construction', u: 96, r: 61, mos: 7, pl: 214900, ph: 234900, sl: 1312, sh: 1488, bd: '3', ba: '2.5', hoa: 84, bm: 33, adr: 132, occ: 0.38, rent: 1750, cf: 'M', lat: 34.7691, lng: -77.4552,
+    plans: [['Beaufort', 3, 2.5, 1312, 214900], ['Pamlico', 3, 2.5, 1488, 234900]],
+    promo: { t: 'Up to $12k toward rate or closing', v: 12000, er: 4.99, x: '2026-10-31', inv: true, note: 'Investor eligible at 25% down. Highest concession-to-price ratio anywhere in the Jacksonville set.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'obh-sl', b: 'Onslow Bay Homes', n: 'Stones Landing Towns', mk: 'JAX', st: 'Planned', u: 90, r: 90, mos: 0, pl: 205900, ph: 225900, sl: 1264, sh: 1420, bd: '3', ba: '2.5', hoa: 72, bm: 36, adr: 126, occ: 0.36, rent: 1695, cf: 'M', lat: 34.7318, lng: -77.3906,
+    plans: [['Atlantic', 3, 2.5, 1264, 205900], ['Coastal', 3, 2.5, 1420, 225900]],
+    promo: { t: '$10k use-as-you-choose (phase 1 reservations)', v: 10000, er: 5.50, x: '2027-01-31', inv: true, note: 'Reservation list only and pricing is not final until permits issue. Lowest entry basis on the board — worth a refundable deposit.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'mck-sf', b: 'McKee Homes', n: 'Sneads Ferry Landing Towns', mk: 'SNF', st: 'Under construction', u: 72, r: 48, mos: 6, pl: 239900, ph: 259900, sl: 1396, sh: 1580, bd: '3', ba: '2.5', hoa: 128, bm: 8, adr: 208, occ: 0.50, rent: 2050, cf: 'M', lat: 34.5487, lng: -77.3872,
+    plans: [['Topsail', 3, 2.5, 1396, 239900], ['New River', 3, 2.5, 1580, 259900]],
+    promo: { t: '$14k incentive — investor eligible', v: 14000, er: 4.75, x: '2026-10-31', inv: true, note: 'The only community on the board where both the nightly and the lease case clear 80 and the concession survives a non-owner-occupied contract.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'mck-hc', b: 'McKee Homes', n: 'Hampstead Commons Towns', mk: 'HAM', st: 'Selling', u: 58, r: 17, mos: 13, pl: 242900, ph: 262900, sl: 1424, sh: 1596, bd: '3', ba: '2.5', hoa: 138, bm: 17, adr: 200, occ: 0.49, rent: 2050, cf: 'M', lat: 34.3611, lng: -77.7268,
+    plans: [['Surf City', 3, 2.5, 1424, 242900], ['Scotts Hill', 3, 2.5, 1596, 262900]],
+    promo: { t: '$9k closing cost credit', v: 9000, er: 5.375, x: '2026-09-30', inv: true, note: 'Final phase, 17 units left. Credit is negotiable upward at quarter end on standing inventory — ask in the last week of September.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'adm-sc', b: 'Adams Homes', n: 'Shallotte Crossing Villas', mk: 'SHA', st: 'Selling', u: 56, r: 22, mos: 12, pl: 232900, ph: 247900, sl: 1372, sh: 1504, bd: '3', ba: '2.5', hoa: 96, bm: 18, adr: 178, occ: 0.47, rent: 1725, cf: 'M', lat: 33.9744, lng: -78.3831,
+    plans: [['Magnolia', 3, 2.5, 1372, 232900], ['Live Oak', 3, 2.5, 1504, 247900]],
+    promo: { t: '$7,500 toward closing with preferred lender', v: 7500, er: 5.625, x: '2026-10-15', inv: true, note: 'No buydown program exists. Adams prices low and concedes little — the basis is the incentive.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'adm-bsl', b: 'Adams Homes', n: 'Boiling Spring Lakes Towns', mk: 'SOU', st: 'Planned', u: 44, r: 44, mos: 0, pl: 224900, ph: 239900, sl: 1336, sh: 1462, bd: '3', ba: '2.5', hoa: 88, bm: 22, adr: 168, occ: 0.47, rent: 1650, cf: 'M', lat: 34.0281, lng: -78.0648,
+    plans: [['Cypress', 3, 2.5, 1336, 224900], ['Palmetto', 3, 2.5, 1462, 239900]],
+    promo: null, flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'stv-mc', b: 'Stevens Fine Homes', n: 'Mill Creek Townes', mk: 'WIL', st: 'Selling', u: 44, r: 9, mos: 16, pl: 244900, ph: 259900, sl: 1398, sh: 1522, bd: '3', ba: '2.5', hoa: 124, bm: 20, adr: 178, occ: 0.52, rent: 2150, cf: 'M', lat: 34.1391, lng: -77.9012,
+    plans: [['Sound', 3, 2.5, 1398, 244900], ['Bradley', 3, 2.5, 1522, 259900]],
+    promo: { t: '$6k design credit (closeout)', v: 6000, er: null, x: '2026-09-20', inv: false, note: 'Nine units left, no captive lender, and a builder with a waiting list. Expect essentially no movement on price.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'log-sp', b: 'Logan Homes', n: 'Southport Commons Towns', mk: 'SOU', st: 'Pre-sale', u: 60, r: 60, mos: 0, pl: 248900, ph: 268900, sl: 1442, sh: 1618, bd: '3', ba: '2.5', hoa: 146, bm: 14, adr: 192, occ: 0.50, rent: 1850, cf: 'M', lat: 33.9284, lng: -78.0301,
+    plans: [['Bald Head', 3, 2.5, 1442, 248900], ['Fort Johnston', 3, 2.5, 1618, 268900]],
+    promo: { t: 'Founders phase — $10k + locked pricing', v: 10000, er: 5.25, x: '2026-11-15', inv: true, note: 'First twelve contracts only. Historic downtown Southport supports real shoulder-season nightly demand, which most of Brunswick County does not.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'log-mh', b: 'Logan Homes', n: 'Morehead Crossing Villas', mk: 'NEW', st: 'Under construction', u: 54, r: 33, mos: 5, pl: 246900, ph: 264900, sl: 1418, sh: 1560, bd: '3', ba: '2.5', hoa: 132, bm: 12, adr: 204, occ: 0.51, rent: 1875, cf: 'M', lat: 34.7318, lng: -76.7602,
+    plans: [['Bogue Banks', 3, 2.5, 1418, 246900], ['Shackleford', 3, 2.5, 1560, 264900]],
+    promo: { t: '$10k flex — investor eligible', v: 10000, er: 5.125, x: '2026-11-30', inv: true, note: 'Atlantic Beach bridge is 12 min. Confirm whether the parcel is Morehead City, Newport or unincorporated Carteret before contract — the STR rule changes with it.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'her-np', b: 'Herrington Classic Homes', n: 'Newport Station Villas', mk: 'NEW', st: 'Pre-sale', u: 48, r: 48, mos: 0, pl: 234900, ph: 249900, sl: 1358, sh: 1490, bd: '3', ba: '2.5', hoa: 112, bm: 15, adr: 200, occ: 0.50, rent: 1900, cf: 'M', lat: 34.7871, lng: -76.8592,
+    plans: [['Bogue', 3, 2.5, 1358, 234900], ['Emerald', 3, 2.5, 1490, 249900]],
+    promo: { t: '$11k investor incentive + year-one HOA', v: 11000, er: 5.125, x: '2026-12-31', inv: true, note: 'A Cherry Point lease floor underneath Crystal Coast nightly rates. Small builder, so the incentive is discretionary rather than programmatic — get it in the contract.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'win-cc', b: 'Windsor Homes', n: 'Carolina Colours Towns', mk: 'NBN', st: 'Selling', u: 40, r: 13, mos: 14, pl: 219900, ph: 239900, sl: 1304, sh: 1438, bd: '3', ba: '2.5', hoa: 104, bm: 42, adr: 132, occ: 0.36, rent: 1625, cf: 'M', lat: 35.1189, lng: -77.0104,
+    plans: [['Trent', 3, 2.5, 1304, 219900], ['Neuse', 3, 2.5, 1438, 239900]],
+    promo: { t: '$8k flex cash', v: 8000, er: 5.50, x: '2026-10-31', inv: true, note: 'Long-term underwriting only. Nightly demand in suburban New Bern is negligible and should be valued at zero.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'adm-hl', b: 'Adams Homes', n: 'Havelock Landing Towns', mk: 'HAV', st: 'Selling', u: 64, r: 19, mos: 11, pl: 214900, ph: 232900, sl: 1298, sh: 1436, bd: '3', ba: '2.5', hoa: 82, bm: 24, adr: 146, occ: 0.41, rent: 1650, cf: 'M', lat: 34.8791, lng: -76.9012,
+    plans: [['Slocum', 3, 2.5, 1298, 214900], ['Cherry', 3, 2.5, 1436, 232900]],
+    promo: { t: '$6k toward closing', v: 6000, er: 5.625, x: '2026-10-31', inv: true, note: 'Cherry Point BAH underwrites the lease. Nightly is a bonus, not a plan.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'dfh-mc', b: 'Dream Finders Homes', n: 'Moyock Commons Towns', mk: 'MOY', st: 'Under construction', u: 68, r: 44, mos: 6, pl: 239990, ph: 257990, sl: 1380, sh: 1524, bd: '3', ba: '2.5', hoa: 96, bm: 52, adr: 152, occ: 0.40, rent: 1975, cf: 'M', lat: 36.5241, lng: -76.1782,
+    plans: [['Currituck', 3, 2.5, 1380, 239990], ['Knotts Island', 3, 2.5, 1524, 257990]],
+    promo: { t: '$9k flex — investor eligible', v: 9000, er: 5.25, x: '2026-11-30', inv: true, note: 'Currituck County has the lowest effective property tax rate on this board at roughly 0.48%, which is worth more per year than most of the closing credits above it.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'tru-sc', b: 'True Homes', n: 'Stonecrest Villas', mk: 'LEL', st: 'Planned 2027', u: 110, r: 110, mos: 0, pl: 231900, ph: 251900, sl: 1340, sh: 1512, bd: '3', ba: '2.5', hoa: 96, bm: 27, adr: 158, occ: 0.44, rent: 1840, cf: 'M', lat: 34.2033, lng: -78.0512,
+    plans: [['Halston', 3, 2.5, 1340, 231900], ['Bristol', 3, 2.5, 1512, 251900]],
+    promo: null, flags: { llc: 1, cap: 1, lease: 1, occ: 1 } },
+  { id: 'bcl-pr', b: 'Bill Clark Homes', n: 'Palmetto Row', mk: 'LEL', st: 'Planned', u: 52, r: 52, mos: 0, pl: 247900, ph: 267900, sl: 1452, sh: 1610, bd: '3', ba: '2.5', hoa: 132, bm: 26, adr: 170, occ: 0.45, rent: 1950, cf: 'M', lat: 34.2477, lng: -78.0731,
+    plans: [['Camellia', 3, 2.5, 1452, 247900], ['Verbena', 3, 2.5, 1610, 267900]],
+    promo: null, flags: { llc: 1, cap: 0, lease: 1, occ: 1 } },
+  { id: 'mun-gp', b: 'Mungo Homes', n: 'Grand Park Towns', mk: 'LEL', st: 'Selling', u: 66, r: 24, mos: 10, pl: 259900, ph: 289900, sl: 1620, sh: 1880, bd: '3', ba: '2.5', hoa: 168, bm: 24, adr: 186, occ: 0.46, rent: 2200, cf: 'V', lat: 34.2649, lng: -78.0089,
+    plans: [['Ashford', 3, 2.5, 1620, 259900], ['Bexley', 3, 2.5, 1880, 289900]],
+    promo: { t: '$15k design studio credit', v: 15000, er: 5.375, x: '2026-11-30', inv: false, note: 'Above the ceiling and shown as the near-miss reference: this is what an extra $20k buys in the same submarket. Credit is design-centre only, not cash.' },
+    flags: { llc: 1, cap: 1, lease: 1, occ: 0 } }
+];
+
+const GAPS = [
+  { area: 'Wrightsville, Kure, Topsail Beach', note: 'Islands are built out. No new attached product at any price; entry resale condos start near $550k and STR permits in Wrightsville are waitlisted.' },
+  { area: 'Outer Banks — Dare County, Corolla', note: 'The most STR-friendly market in the state and completely out of reach. No new attached construction under roughly $475k. Currituck mainland is the only affordable proxy.' },
+  { area: 'Oak Island, Holden, Ocean Isle', note: 'Infill single-family only. No townhome communities are permitted at this basis; mainland Shallotte and Calabash are the substitute.' },
+  { area: 'Beaufort, historic Southport core', note: 'No new attached product inside either historic district, and permitting would be the binding constraint even if there were.' }
+];
+
+const FACTORS = [
+  { key: 'beach', label: 'Beach / water access', short: 'beach', color: 'oklch(0.60 0.11 225)' },
+  { key: 'reg', label: 'STR regulation friendliness', short: 'reg', color: 'oklch(0.52 0.10 195)' },
+  { key: 'yieldF', label: 'Gross yield vs price', short: 'yield', color: 'oklch(0.55 0.12 150)' },
+  { key: 'hoa', label: 'HOA allows short-term', short: 'HOA', color: 'oklch(0.62 0.10 165)' },
+  { key: 'season', label: 'Year-round occupancy', short: 'season', color: 'oklch(0.66 0.11 100)' },
+  { key: 'ltrD', label: 'Long-term rental demand', short: 'LTR', color: 'oklch(0.55 0.11 60)' },
+  { key: 'appr', label: 'Appreciation vs new supply', short: 'appr', color: 'oklch(0.55 0.12 30)' },
+  { key: 'risk', label: 'Insurance & flood risk', short: 'risk', color: 'oklch(0.52 0.10 340)' }
+];
+
+const PRESETS = {
+  str: { beach: 18, reg: 17, yieldF: 16, hoa: 15, season: 13, ltrD: 3, appr: 9, risk: 9 },
+  blend: { beach: 12, reg: 11, yieldF: 16, hoa: 10, season: 11, ltrD: 16, appr: 13, risk: 11 },
+  ltr: { beach: 5, reg: 4, yieldF: 20, hoa: 4, season: 11, ltrD: 29, appr: 16, risk: 11 }
+};
+
+const TIER_C = ['oklch(0.42 0.10 240)', 'oklch(0.60 0.085 240)', 'oklch(0.75 0.035 240)'];
+const GOLD = 'oklch(0.58 0.12 78)';
+const POS = 'oklch(0.48 0.11 150)';
+const NEG = 'oklch(0.52 0.14 25)';
+const INK = 'oklch(0.26 0.015 250)';
+const DIM = 'oklch(0.54 0.015 250)';
+const PRIM = 'oklch(0.50 0.10 240)';
+const MARKET_RATE = 6.25;
+const INVEST_ADDON = 0.75;
+const STATUS_META = {
+  'Selling': ['oklch(0.93 0.05 150)', 'oklch(0.38 0.09 150)'],
+  'Under construction': ['oklch(0.94 0.04 240)', 'oklch(0.38 0.09 240)'],
+  'Pre-sale': ['oklch(0.95 0.045 78)', 'oklch(0.42 0.10 60)'],
+  'Planned': ['oklch(0.94 0.006 85)', 'oklch(0.44 0.015 250)'],
+  'Planned 2027': ['oklch(0.94 0.006 85)', 'oklch(0.44 0.015 250)']
+};
+const CONF = {
+  V: ['oklch(0.48 0.11 150)', 'Sourced', 'Community, builder and submarket confirmed in current builder or listing sources.'],
+  M: ['oklch(0.62 0.10 78)', 'Modeled', 'Community exists or is announced; unit mix and pricing are modeled from comparable phases.']
+};
+
+const clamp = (v) => Math.max(0, Math.min(100, v));
+const money = (v) => '$' + Math.round(v).toLocaleString('en-US');
+const k = (v) => '$' + Math.round(v / 1000) + 'k';
+const pct = (v, d) => (v * 100).toFixed(d === undefined ? 1 : d) + '%';
+const norm = (v, lo, hi) => clamp((v - lo) / (hi - lo) * 100);
+
+class Component extends DCLogic {
+  state = {
+    view: 'all', strategy: 'blend', weights: Object.assign({}, PRESETS.blend), custom: false,
+    capMode: 'off', builder: null, markets: [], query: '', sort: 'tier',
+    selected: 'mck-sf', panel: 'plans', pins: [],
+    calcMode: 'str', down: 25, occAdj: 0, adrAdj: 0, rentAdj: 0, mgmt: 20, usePromoRate: true,
+    capOverride: null
+  };
+
+  componentDidMount() {
+    window.__coastalMapPick = (id) => this.setState({ selected: id });
+  }
+
+  cap() { return this.state.capOverride ?? this.props.priceCap ?? 250000; }
+
+  strGross(c) { return c.adr * 365 * c.occ; }
+  ltrGross(c) { return c.rent * 12; }
+
+  factorVals(c, mode) {
+    const m = MK[c.mk];
+    const f = c.flags;
+    const yStr = norm(this.strGross(c) / c.pl, 0.085, 0.175);
+    const yLtr = norm(this.ltrGross(c) / c.pl, 0.075, 0.115);
+    return {
+      beach: clamp(100 - c.bm * 2.55),
+      reg: m.reg,
+      yieldF: mode === 'str' ? yStr : mode === 'ltr' ? yLtr : (yStr + yLtr) / 2,
+      hoa: clamp(100 - (f.cap ? 0 : 30) - (f.lease ? 0 : 35) - (f.occ ? 0 : 15)),
+      season: m.season,
+      ltrD: m.ltrD,
+      appr: m.appr,
+      risk: clamp(100 - (m.ins - 120) * 0.62)
+    };
+  }
+
+  weighted(c, weights, mode) {
+    const v = this.factorVals(c, mode);
+    let sum = 0, tot = 0;
+    FACTORS.forEach((f) => { const w = weights[f.key] || 0; sum += w * v[f.key]; tot += w; });
+    return tot ? Math.round(sum / tot) : 0;
+  }
+
+  strScore(c) { return this.weighted(c, PRESETS.str, 'str'); }
+  ltrScore(c) { return this.weighted(c, PRESETS.ltr, 'ltr'); }
+  activeScore(c) { return this.weighted(c, this.state.weights, this.state.strategy); }
+  tierOf(v) { return v >= 76 ? 1 : v >= 62 ? 2 : 3; }
+
+  enriched() {
+    return DATA.map((c) => {
+      const sc = this.activeScore(c);
+      return Object.assign({}, c, { m: MK[c.mk], sc, tier: this.tierOf(sc), sStr: this.strScore(c), sLtr: this.ltrScore(c) });
+    });
+  }
+
+  filtered() {
+    const st = this.state, cap = this.cap(), q = st.query.trim().toLowerCase();
+    return this.enriched().filter((c) => {
+      if (st.builder && c.b !== st.builder) return false;
+      if (st.markets.length && st.markets.indexOf(c.mk) < 0) return false;
+      if (st.capMode === 'hard' && c.pl > cap) return false;
+      if (st.capMode === 'band' && c.pl > cap * 1.08) return false;
+      if (this.props.investorOnly && !(c.promo && c.promo.inv)) return false;
+      if (this.props.hidePlanned && c.st.indexOf('Planned') === 0) return false;
+      if (st.view === 'promo' && !c.promo) return false;
+      if (st.view === 'investor' && !(c.promo && c.promo.inv)) return false;
+      if (st.view === 'pipeline' && c.st.indexOf('Planned') !== 0 && c.st !== 'Pre-sale') return false;
+      if (q && (c.n + ' ' + c.b + ' ' + c.m.name + ' ' + c.m.county).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+
+  quickYield(c) {
+    return this.state.strategy === 'ltr' ? this.ltrGross(c) / c.pl : this.strGross(c) / c.pl;
+  }
+
+  sorted() {
+    const rows = this.filtered().slice();
+    const cmp = {
+      tier: (a, b) => b.sc - a.sc || a.pl - b.pl,
+      price: (a, b) => a.pl - b.pl,
+      str: (a, b) => b.sStr - a.sStr,
+      ltr: (a, b) => b.sLtr - a.sLtr,
+      promo: (a, b) => (b.promo ? b.promo.v : 0) - (a.promo ? a.promo.v : 0),
+      yield: (a, b) => this.quickYield(b) - this.quickYield(a),
+      pace: (a, b) => this.pace(b) - this.pace(a)
+    };
+    return rows.sort(cmp[this.state.sort] || cmp.tier);
+  }
+
+  pace(c) { return c.mos ? (c.u - c.r) / c.mos : 0; }
+
+  set(key, v) { this.setState({ [key]: v }); }
+  togglePin(id) {
+    const p = this.state.pins.slice(), i = p.indexOf(id);
+    if (i >= 0) p.splice(i, 1); else if (p.length < 3) p.push(id);
+    this.setState({ pins: p });
+  }
+  toggleMarket(mk) {
+    const m = this.state.markets.slice(), i = m.indexOf(mk);
+    if (i >= 0) m.splice(i, 1); else m.push(mk);
+    this.setState({ markets: m });
+  }
+  setStrategy(id) { this.setState({ strategy: id, weights: Object.assign({}, PRESETS[id]), custom: false }); }
+  setWeight(key, v) {
+    const w = Object.assign({}, this.state.weights); w[key] = v;
+    this.setState({ weights: w, custom: true });
+  }
+
+  daysTo(x) { return Math.round((new Date(x) - new Date('2026-08-31')) / 86400000); }
+
+  calc(c) {
+    const st = this.state, mode = st.calcMode, price = c.pl;
+    const promoRate = c.promo && c.promo.er ? c.promo.er : null;
+    const base = MARKET_RATE + INVEST_ADDON;
+    const rate = st.usePromoRate && promoRate ? promoRate + (c.promo.inv ? 0 : INVEST_ADDON) : base;
+    const loan = price * (1 - st.down / 100);
+    const r = rate / 100 / 12;
+    const pi = r > 0 ? loan * r / (1 - Math.pow(1 + r, -360)) : loan / 360;
+    const tax = price * c.m.tax / 12;
+    const ins = c.m.ins * (mode === 'str' ? 1.22 : 1);
+    const hoa = c.hoa;
+    const pitia = pi + tax + ins + hoa;
+    const adr = c.adr * (1 + st.adrAdj / 100);
+    const occ = Math.max(0.15, Math.min(0.92, c.occ + st.occAdj / 100));
+    const rent = c.rent * (1 + st.rentAdj / 100);
+    const gross = mode === 'str' ? adr * 30.42 * occ : rent;
+    const mgmt = gross * st.mgmt / 100;
+    const varOpex = mode === 'str' ? 340 : gross * 0.04;
+    const noi = gross - mgmt - varOpex - tax - ins - hoa;
+    const cf = noi - pi;
+    const cashCredit = c.promo && !promoRate ? Math.min(c.promo.v, price * 0.03) : 0;
+    const closing = Math.max(0, price * 0.03 - cashCredit);
+    const furnish = mode === 'str' ? 18000 : 0;
+    const invested = price * st.down / 100 + closing + furnish;
+    return { price, rate, pi, tax, ins, hoa, pitia, gross, mgmt, varOpex, noi, cf, invested, adr, occ, rent, mode, promoRate,
+      cap: noi * 12 / price, coc: cf * 12 / invested, dscr: gross / pitia };
+  }
+
+  renderVals() {
+    const st = this.state, cap = this.cap(), rows = this.sorted(), all = this.enriched();
+    const visible = all.filter((c) => {
+      if (st.capMode === 'hard') return c.pl <= cap;
+      if (st.capMode === 'band') return c.pl <= cap * 1.08;
+      return true;
+    });
+
+    const tabDefs = [
+      ['all', 'All communities', all.length],
+      ['promo', 'Active incentives', all.filter((c) => c.promo).length],
+      ['investor', 'Investor-eligible', all.filter((c) => c.promo && c.promo.inv).length],
+      ['pipeline', 'Pipeline / pre-sale', all.filter((c) => c.st.indexOf('Planned') === 0 || c.st === 'Pre-sale').length]
+    ];
+    const tabs = tabDefs.map(([id, label, count]) => ({
+      label, count, onClick: () => this.set('view', id),
+      bg: st.view === id ? 'oklch(0.972 0.006 85)' : 'oklch(0.26 0.02 250)',
+      color: st.view === id ? INK : 'oklch(0.80 0.015 250)'
+    }));
+
+    const withPromo = rows.filter((c) => c.promo);
+    const invPromo = withPromo.filter((c) => c.promo.inv);
+    const prices = rows.map((c) => c.pl).sort((a, b) => a - b);
+    const med = prices.length ? prices[Math.floor(prices.length / 2)] : 0;
+    const bestY = rows.slice().sort((a, b) => this.quickYield(b) - this.quickYield(a))[0];
+    const overCount = rows.filter((c) => c.pl > cap).length;
+    const kpis = [
+      { label: 'Communities in scope', value: String(rows.length), note: rows.length + ' of ' + all.length + ' tracked · ' + overCount + ' above the ' + k(cap) + ' ceiling', color: INK },
+      { label: 'Builders active', value: String(new Set(rows.map((c) => c.b)).size), note: 'Selling, building or permitted attached product', color: INK },
+      { label: 'Tier 1 locations', value: String(rows.filter((c) => c.tier === 1).length), note: 'Score 76+ on ' + (st.custom ? 'your custom weights' : st.strategy === 'blend' ? 'the blended weights' : 'the ' + st.strategy.toUpperCase() + ' weights'), color: TIER_C[0] },
+      { label: 'Live incentives', value: String(withPromo.length), note: withPromo.length ? 'Median value ' + money(withPromo.map((c) => c.promo.v).sort((a, b) => a - b)[Math.floor(withPromo.length / 2)]) : 'None in scope', color: INK },
+      { label: 'Investor-eligible', value: String(invPromo.length), note: 'Concession survives a non-owner-occupied contract', color: GOLD },
+      { label: 'Median entry price', value: med ? k(med) : '—', note: bestY ? 'Best gross yield: ' + bestY.n.split(' — ')[0] + ' at ' + pct(this.quickYield(bestY)) : '', color: INK }
+    ];
+
+    const strategies = [['str', 'Short-term rental'], ['blend', 'Blended'], ['ltr', 'Long-term rental']].map(([id, label]) => ({
+      label, onClick: () => this.setStrategy(id),
+      bg: st.strategy === id && !st.custom ? PRIM : 'transparent',
+      color: st.strategy === id && !st.custom ? '#fff' : DIM
+    }));
+    const capModes = [['hard', 'hide over'], ['band', '+8% band'], ['off', 'show + flag']].map(([id, label]) => ({
+      label, onClick: () => this.set('capMode', id),
+      bg: st.capMode === id ? 'oklch(0.95 0.03 240)' : '#fff',
+      border: st.capMode === id ? PRIM : 'oklch(0.89 0.008 85)',
+      color: st.capMode === id ? PRIM : DIM
+    }));
+
+    const mkToggle = (on, label, fn) => ({
+      label, onClick: fn, mark: on ? '✓' : '',
+      bg: on ? 'oklch(0.95 0.03 240)' : '#fff',
+      border: on ? PRIM : 'oklch(0.89 0.008 85)',
+      color: on ? PRIM : 'oklch(0.40 0.015 250)',
+      boxBg: on ? PRIM : 'transparent',
+      boxBorder: on ? PRIM : 'oklch(0.80 0.01 85)'
+    });
+    const toggles = [
+      mkToggle(!!this.props.investorOnly, 'Investor incentive only', () => this.setState({})),
+      mkToggle(!!this.props.hidePlanned, 'Exclude pipeline', () => this.setState({})),
+      mkToggle(st.builder !== null, st.builder ? 'Builder: ' + st.builder : 'All builders', () => this.set('builder', null)),
+      mkToggle(st.markets.length > 0, st.markets.length ? st.markets.length + ' submarkets' : 'Whole coast', () => this.set('markets', []))
+    ];
+
+    const marketChips = Object.keys(MK).map((key) => {
+      const on = st.markets.indexOf(key) >= 0;
+      return {
+        label: MK[key].name, count: all.filter((c) => c.mk === key).length,
+        onClick: () => this.toggleMarket(key),
+        bg: on ? PRIM : '#fff', border: on ? PRIM : 'oklch(0.89 0.008 85)',
+        color: on ? '#fff' : 'oklch(0.40 0.015 250)'
+      };
+    });
+
+    const builderNames = Array.from(new Set(DATA.map((c) => c.b))).sort();
+    const builderRows = [{ name: 'All builders', mono: 'ALL', meta: DATA.length + ' communities · whole coast', id: null, dot: 'transparent' }]
+      .concat(builderNames.map((name) => {
+        const set = all.filter((c) => c.b === name);
+        return {
+          name, id: name,
+          mono: name.replace(/[^A-Za-z ]/g, '').split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join(''),
+          meta: set.length + ' · from ' + k(Math.min.apply(null, set.map((c) => c.pl))) + ' · q' + BLD[name].q,
+          dot: set.some((c) => c.promo && c.promo.inv) ? GOLD : set.some((c) => c.promo) ? PRIM : 'oklch(0.90 0.008 85)'
+        };
+      }))
+      .map((b) => {
+        const on = st.builder === b.id;
+        return Object.assign(b, {
+          onClick: () => this.set('builder', b.id),
+          bg: on ? 'oklch(0.95 0.03 240)' : '#fff',
+          chipBg: on ? PRIM : 'oklch(0.94 0.008 85)',
+          chipColor: on ? '#fff' : DIM,
+          nameColor: on ? PRIM : INK
+        });
+      });
+
+    const totalW = FACTORS.reduce((s, f) => s + (st.weights[f.key] || 0), 0) || 1;
+    const weightSliders = FACTORS.map((f) => ({
+      label: f.label, value: st.weights[f.key] || 0,
+      display: Math.round((st.weights[f.key] || 0) / totalW * 100) + '%',
+      color: f.color,
+      onChange: (e) => this.setWeight(f.key, +e.target.value)
+    }));
+    const factorKey = FACTORS.map((f) => ({ label: f.short, color: f.color }));
+
+    const legend = [
+      { label: CONF.V[1], color: CONF.V[0], note: CONF.V[2] },
+      { label: CONF.M[1], color: CONF.M[0], note: CONF.M[2] },
+      { label: 'Gold dot', color: GOLD, note: 'Builder incentive confirmed available on an investment-property purchase.' }
+    ];
+
+    const mapPoints = visible.map((c) => ({
+      id: c.id, name: c.n, builder: c.b, lat: c.lat, lng: c.lng,
+      r: 5 + Math.min(8, c.u / 14),
+      fill: TIER_C[c.tier - 1], inv: !!(c.promo && c.promo.inv), ringColor: GOLD,
+      meta: 'from ' + k(c.pl) + '  ·  T' + c.tier + ' (' + c.sc + ')  ·  ' + c.st
+    }));
+
+    const plotPoints = visible.map((c) => {
+      const x = clamp((c.pl - 195000) / 100000 * 100);
+      const size = 10 + Math.min(16, c.u / 9);
+      return {
+        x: x + '%', y: c.sc + '%', size: size + 'px', off: (-size / 2) + 'px',
+        fill: TIER_C[c.tier - 1], ring: (c.promo && c.promo.inv) ? '2px solid ' + GOLD : '1.5px solid #fff',
+        title: c.n + ' · ' + c.b + ' · from ' + k(c.pl) + ' · score ' + c.sc,
+        onClick: () => this.set('selected', c.id)
+      };
+    });
+    const tierLegend = [
+      { label: 'Tier 1 · 76+', color: TIER_C[0] }, { label: 'Tier 2 · 62–75', color: TIER_C[1] }, { label: 'Tier 3 · <62', color: TIER_C[2] }
+    ];
+
+    const leaders = rows.slice(0, 8).map((c, i) => {
+      const v = this.factorVals(c, st.strategy);
+      const parts = FACTORS.map((f) => ({ f, contrib: (st.weights[f.key] || 0) * v[f.key] }));
+      const tot = parts.reduce((s, p) => s + p.contrib, 0) || 1;
+      return {
+        rank: String(i + 1).padStart(2, '0'),
+        rankColor: i < 3 ? TIER_C[0] : DIM,
+        name: c.n, sub: c.b + ' · ' + c.m.name + ' · from ' + k(c.pl),
+        score: String(c.sc), scoreColor: TIER_C[c.tier - 1], tier: 'Tier ' + c.tier,
+        bars: parts.map((p) => ({ w: (p.contrib / tot * 100).toFixed(1) + '%', color: p.f.color, title: p.f.label + ': ' + Math.round(v[p.f.key]) })),
+        bg: st.selected === c.id ? 'oklch(0.96 0.02 240)' : '#fff',
+        onClick: () => this.set('selected', c.id)
+      };
+    });
+
+    const sortChips = [['tier', 'tier'], ['price', 'price'], ['yield', 'yield'], ['promo', 'incentive $'], ['pace', 'sales pace'], ['str', 'STR'], ['ltr', 'LTR']].map(([id, label]) => ({
+      label, onClick: () => this.set('sort', id),
+      bg: st.sort === id ? PRIM : '#fff', border: st.sort === id ? PRIM : 'oklch(0.90 0.008 85)',
+      color: st.sort === id ? '#fff' : DIM
+    }));
+
+    const tableRows = rows.map((c) => {
+      const sm = STATUS_META[c.st] || STATUS_META.Planned;
+      const over = c.pl > cap;
+      return {
+        name: c.n, builder: c.b, town: c.m.name, status: c.st, over,
+        units: c.mos ? c.r + ' left · ' + this.pace(c).toFixed(1) + '/mo' : c.u + ' planned',
+        price: k(c.pl), priceColor: over ? 'oklch(0.50 0.12 55)' : INK,
+        str: String(c.sStr), ltr: String(c.sLtr),
+        tier: 'T' + c.tier,
+        tierBg: c.tier === 1 ? 'oklch(0.93 0.045 240)' : c.tier === 2 ? 'oklch(0.955 0.02 240)' : 'oklch(0.96 0.006 85)',
+        tierColor: TIER_C[c.tier - 1],
+        statusBg: sm[0], statusColor: sm[1], confColor: CONF[c.cf][0],
+        promo: c.promo ? c.promo.t : 'none published',
+        promoColor: c.promo ? (c.promo.inv ? 'oklch(0.42 0.09 78)' : 'oklch(0.42 0.015 250)') : 'oklch(0.66 0.01 85)',
+        promoDot: c.promo ? (c.promo.inv ? GOLD : PRIM) : 'oklch(0.90 0.008 85)',
+        accent: st.selected === c.id ? PRIM : 'transparent',
+        bg: st.selected === c.id ? 'oklch(0.96 0.02 240)' : '#fff',
+        onClick: () => this.set('selected', c.id)
+      };
+    });
+
+    const promoRows = rows.filter((c) => c.promo).sort((a, b) => b.promo.v - a.promo.v).map((c) => {
+      const d = this.daysTo(c.promo.x);
+      const urgency = d <= 30 ? NEG : d <= 60 ? 'oklch(0.58 0.12 78)' : POS;
+      return {
+        name: c.n, builder: c.b, terms: c.promo.t,
+        rate: c.promo.er ? c.promo.er.toFixed(2) + '%' : 'cash only',
+        value: money(c.promo.v),
+        expires: d > 0 ? d + ' days left' : 'expired',
+        expPct: Math.max(4, Math.min(100, 100 - d / 1.5)) + '%', expColor: urgency,
+        invLabel: c.promo.inv ? 'investor OK' : 'owner-occ',
+        invBg: c.promo.inv ? 'oklch(0.95 0.05 78)' : 'oklch(0.95 0.006 85)',
+        invColor: c.promo.inv ? 'oklch(0.42 0.10 70)' : DIM,
+        bg: st.selected === c.id ? 'oklch(0.96 0.02 240)' : '#fff',
+        onClick: () => this.setState({ selected: c.id, panel: 'incentive' })
+      };
+    });
+
+    const c = all.filter((x) => x.id === st.selected)[0] || all[0];
+    const calc = this.calc(c);
+    const fv = this.factorVals(c, st.strategy);
+    const pinned = st.pins.indexOf(c.id) >= 0;
+    const maxPlan = Math.max.apply(null, c.plans.map((p) => p[4]));
+    const paceV = this.pace(c);
+    const bp = BLD[c.b];
+
+    const sel = {
+      builder: c.b + ' · ' + c.st, name: c.n,
+      locLine: c.m.name + ', ' + c.m.county + ' County · ' + c.bm + ' min to sand · HOA ' + money(c.hoa) + '/mo',
+      tier: 'Tier ' + c.tier + ' · ' + c.sc,
+      tierBg: 'oklch(0.32 0.05 240)', tierColor: 'oklch(0.90 0.05 240)',
+      pinLabel: pinned ? '✓ compared' : '+ compare',
+      pinBg: pinned ? GOLD : 'transparent', pinColor: pinned ? '#fff' : 'oklch(0.82 0.015 250)',
+      pinBorder: pinned ? GOLD : 'oklch(0.42 0.02 250)',
+      onPin: () => this.togglePin(c.id),
+      heroStats: [
+        { label: 'From', value: k(c.pl) },
+        { label: 'STR yield', value: pct(this.strGross(c) / c.pl, 0) },
+        { label: 'LTR yield', value: pct(this.ltrGross(c) / c.pl, 0) },
+        { label: 'Left', value: c.mos ? String(c.r) : String(c.u) }
+      ],
+      plans: c.plans.map((p) => ({
+        name: p[0], beds: p[1], baths: p[2], sqft: p[3].toLocaleString('en-US'),
+        price: money(p[4]), ppsf: '$' + Math.round(p[4] / p[3]),
+        priceColor: p[4] > cap ? 'oklch(0.50 0.12 55)' : INK,
+        bar: Math.round(p[4] / maxPlan * 100) + '%',
+        barColor: p[4] > cap ? 'oklch(0.55 0.11 55)' : PRIM,
+        border: 'oklch(0.92 0.008 85)', bg: p[4] > cap ? 'oklch(0.985 0.008 60)' : '#fff',
+        onClick: () => this.set('panel', 'math')
+      })),
+      specRows: [
+        { label: 'Bedrooms / baths', value: c.bd + ' bd · ' + c.ba + ' ba' },
+        { label: 'Heated sq ft', value: c.sl.toLocaleString('en-US') + '–' + c.sh.toLocaleString('en-US') },
+        { label: 'Price per sq ft', value: '$' + Math.round(c.pl / c.sl) + '–$' + Math.round(c.ph / c.sh) },
+        { label: 'HOA dues', value: money(c.hoa) + '/mo' },
+        { label: 'Effective tax rate', value: pct(c.m.tax, 2) + ' of value' },
+        { label: 'Modeled insurance', value: money(c.m.ins) + '/mo (lease basis)' },
+        { label: 'Sales pace', value: paceV ? paceV.toFixed(1) + ' units/mo' : 'not yet selling' },
+        { label: 'Sellout at pace', value: paceV ? Math.round(c.r / paceV) + ' months' : '—' },
+        { label: 'Data confidence', value: CONF[c.cf][1] }
+      ],
+      factors: FACTORS.map((f) => ({
+        label: f.label, value: Math.round(fv[f.key]),
+        weight: Math.round((st.weights[f.key] || 0) / totalW * 100) + '%',
+        bar: Math.round(fv[f.key]) + '%', color: f.color
+      })),
+      scoreCards: [
+        { title: 'Short-term rental case', score: String(c.sStr), color: c.sStr >= 70 ? TIER_C[0] : c.sStr >= 50 ? TIER_C[1] : TIER_C[2], bar: c.sStr + '%',
+          drivers: [
+            { tag: c.bm + 'min', text: c.m.strNote, bg: 'oklch(0.95 0.02 240)', color: PRIM },
+            { tag: 'ADR', text: 'Modeled ' + money(c.adr) + ' nightly at ' + Math.round(c.occ * 100) + '% annual occupancy — ' + money(this.strGross(c)) + ' gross, ' + pct(this.strGross(c) / c.pl) + ' on the entry price.', bg: 'oklch(0.95 0.02 240)', color: PRIM },
+            { tag: 'tax', text: 'State sales tax plus ' + c.m.occTax + ' county occupancy tax on accommodation receipts, remitted monthly.', bg: 'oklch(0.96 0.006 85)', color: DIM }
+          ] },
+        { title: 'Long-term rental case', score: String(c.sLtr), color: c.sLtr >= 70 ? TIER_C[0] : c.sLtr >= 50 ? TIER_C[1] : TIER_C[2], bar: c.sLtr + '%',
+          drivers: [
+            { tag: 'demand', text: c.m.ltrDriver, bg: 'oklch(0.95 0.03 150)', color: 'oklch(0.40 0.09 150)' },
+            { tag: 'rent', text: 'Modeled ' + money(c.rent) + '/mo, or ' + pct(this.ltrGross(c) / c.pl) + ' gross on the entry price.', bg: 'oklch(0.95 0.03 150)', color: 'oklch(0.40 0.09 150)' },
+            { tag: 'rule', text: 'No statewide rent control in NC. Annual leases with a 60-day notice clause are the local standard.', bg: 'oklch(0.96 0.006 85)', color: DIM }
+          ] }
+      ],
+      ruleRows: [
+        { label: 'Jurisdiction and STR rule', value: c.m.strRule },
+        { label: 'Vacation Rental Act (NCGS 42A)', value: 'A rental under 90 days to a guest with a permanent residence elsewhere is covered: a written vacation rental agreement is mandatory, and advance payments and deposits must be handled as the Act specifies.' },
+        { label: 'HOA rental covenants', value: c.flags.cap ? 'No rental cap in the current declaration — confirm the amendment threshold before closing, because a future owner majority can impose one.' : 'The declaration reserves the right to cap rentals or require board approval. Read the recorded covenants, not the sales brochure.' },
+        { label: 'Minimum lease term', value: c.flags.lease ? 'No minimum lease term recorded — nightly operation is contractually possible wherever zoning allows it.' : 'A minimum lease term restriction is on record, which removes the nightly strategy entirely.' }
+      ],
+      promoTitle: c.promo ? c.promo.t : 'No published incentive',
+      promoTerms: c.promo ? c.promo.note : 'Nothing on the board right now. Pipeline and planned communities typically publish terms 60–90 days before first closings — worth a standing call with the sales office.',
+      promoBorder: c.promo && c.promo.inv ? GOLD : 'oklch(0.90 0.008 85)',
+      promoBg: c.promo ? (c.promo.inv ? 'oklch(0.985 0.02 78)' : '#fff') : 'oklch(0.975 0.006 85)',
+      promoInvLabel: c.promo ? (c.promo.inv ? 'INVESTOR ELIGIBLE' : 'OWNER-OCCUPANT') : 'NONE',
+      promoInvBg: c.promo && c.promo.inv ? GOLD : 'oklch(0.94 0.006 85)',
+      promoInvColor: c.promo && c.promo.inv ? '#fff' : DIM,
+      promoStats: c.promo ? [
+        { label: 'Stated value', value: money(c.promo.v), color: INK },
+        { label: 'Effective rate', value: c.promo.er ? c.promo.er.toFixed(2) + '%' : 'cash', color: PRIM },
+        { label: 'Expires in', value: this.daysTo(c.promo.x) + 'd', color: this.daysTo(c.promo.x) <= 30 ? NEG : INK }
+      ] : [],
+      flagRows: [
+        { label: 'LLC or trust may take title', ok: c.flags.llc, note: c.flags.llc ? 'Builder contracts accept an entity buyer; assignment before closing still needs written consent.' : 'Individual buyers only per the purchase agreement.' },
+        { label: 'No HOA rental cap', ok: c.flags.cap, note: c.flags.cap ? 'No cap recorded today.' : 'Cap or board-approval language is present — verify current utilization before you contract.' },
+        { label: 'No minimum lease term', ok: c.flags.lease, note: c.flags.lease ? 'Nightly and mid-term are both open where zoning allows.' : 'A minimum term restriction kills the nightly play.' },
+        { label: 'Incentive survives investment contract', ok: c.promo ? (c.promo.inv ? 1 : 0) : 0, note: c.promo ? (c.promo.inv ? 'Confirmed available on non-owner-occupied financing.' : 'Owner-occupant or second home only — price the deal without it.') : 'Nothing published.' },
+        { label: 'No owner-occupancy requirement', ok: c.flags.occ, note: c.flags.occ ? 'No occupancy covenant found.' : 'Occupancy language sits in the declaration or in the incentive terms.' }
+      ].map((f) => ({
+        label: f.label, note: f.note, mark: f.ok ? '✓' : '✕',
+        color: f.ok ? POS : NEG, bg: f.ok ? 'oklch(0.975 0.02 150)' : 'oklch(0.975 0.02 25)'
+      }))
+    };
+
+    const bldSet = all.filter((x) => x.b === c.b);
+    const bld = {
+      name: c.b, scope: bp.scope, quality: String(bp.q),
+      qColor: bp.q >= 80 ? POS : bp.q >= 72 ? PRIM : 'oklch(0.55 0.12 55)',
+      sentiment: bp.sent,
+      rows: [
+        { label: 'Warranty', value: bp.warranty },
+        { label: 'Communities here', value: String(bldSet.length) },
+        { label: 'Entry price range', value: k(Math.min.apply(null, bldSet.map((x) => x.pl))) + '–' + k(Math.max.apply(null, bldSet.map((x) => x.pl))) },
+        { label: 'Units tracked', value: String(bldSet.reduce((s, x) => s + x.u, 0)) },
+        { label: 'Remaining', value: String(bldSet.reduce((s, x) => s + x.r, 0)) },
+        { label: 'Investor-eligible offers', value: bldSet.filter((x) => x.promo && x.promo.inv).length + ' of ' + bldSet.length },
+        { label: 'Best concession', value: bldSet.some((x) => x.promo) ? money(Math.max.apply(null, bldSet.filter((x) => x.promo).map((x) => x.promo.v))) : 'none' }
+      ],
+      office: 'On-site sales office at ' + c.n + ', ' + c.m.name + ', ' + c.m.county + ' County. ' + (c.mos ? 'Open and selling — ' + c.r + ' units remain at ' + paceV.toFixed(1) + ' per month, roughly ' + Math.round(c.r / Math.max(paceV, 0.1)) + ' months of inventory.' : 'Not yet open; inquiries route to the builder\u2019s regional office.'),
+      web: bp.web
+    };
+
+    const calcModes = [['str', 'Short-term (nightly)'], ['ltr', 'Long-term (lease)']].map(([id, label]) => ({
+      label, onClick: () => this.set('calcMode', id),
+      bg: st.calcMode === id ? PRIM : 'transparent', color: st.calcMode === id ? '#fff' : DIM
+    }));
+
+    const calcOut = [
+      { label: 'Monthly cash flow', value: (calc.cf >= 0 ? '+' : '−') + money(Math.abs(calc.cf)), color: calc.cf >= 0 ? POS : NEG, note: 'After debt service, taxes, insurance, HOA and management' },
+      { label: 'Cash on cash', value: pct(calc.coc), color: calc.coc >= 0 ? POS : NEG, note: money(calc.invested) + ' in at close' + (calc.mode === 'str' ? ' incl. $18k furnishing' : '') },
+      { label: 'Cap rate', value: pct(calc.cap), color: INK, note: money(calc.noi * 12) + ' NOI on ' + k(calc.price) },
+      { label: 'DSCR', value: calc.dscr.toFixed(2), color: calc.dscr >= 1.15 ? POS : calc.dscr >= 1 ? 'oklch(0.55 0.12 78)' : NEG, note: calc.dscr >= 1.15 ? 'Clears most DSCR lender floors' : 'Below the typical 1.15 floor' }
+    ];
+
+    const calcSliders = [
+      { label: 'Down payment', min: 5, max: 50, step: 1, value: st.down, display: st.down + '%', onChange: (e) => this.set('down', +e.target.value) },
+      { label: 'Management fee', min: 0, max: 30, step: 1, value: st.mgmt, display: st.mgmt + '% of gross', onChange: (e) => this.set('mgmt', +e.target.value) }
+    ].concat(st.calcMode === 'str' ? [
+      { label: 'Nightly rate vs model', min: -30, max: 40, step: 1, value: st.adrAdj, display: money(calc.adr) + '/night', onChange: (e) => this.set('adrAdj', +e.target.value) },
+      { label: 'Occupancy vs model', min: -20, max: 25, step: 1, value: st.occAdj, display: Math.round(calc.occ * 100) + '% annual', onChange: (e) => this.set('occAdj', +e.target.value) }
+    ] : [
+      { label: 'Market rent vs model', min: -25, max: 30, step: 1, value: st.rentAdj, display: money(calc.rent) + '/mo', onChange: (e) => this.set('rentAdj', +e.target.value) }
+    ]);
+
+    const promoOn = st.usePromoRate && !!calc.promoRate;
+    const calcLines = [
+      { label: calc.mode === 'str' ? 'Gross nightly revenue' : 'Gross rent', value: money(calc.gross) },
+      { label: 'Management', value: '−' + money(calc.mgmt) },
+      { label: calc.mode === 'str' ? 'Utilities, supplies, turnover' : 'Maintenance reserve', value: '−' + money(calc.varOpex) },
+      { label: 'Property tax', value: '−' + money(calc.tax) },
+      { label: 'Insurance' + (calc.mode === 'str' ? ' (STR + coastal loading)' : ''), value: '−' + money(calc.ins) },
+      { label: 'HOA dues', value: '−' + money(calc.hoa) },
+      { label: 'Net operating income', value: money(calc.noi), bold: 1 },
+      { label: 'Principal & interest at ' + calc.rate.toFixed(2) + '%', value: '−' + money(calc.pi) },
+      { label: 'Monthly cash flow', value: (calc.cf >= 0 ? '+' : '−') + money(Math.abs(calc.cf)), bold: 1, cfColor: calc.cf >= 0 ? POS : NEG }
+    ].map((l) => ({
+      label: l.label, value: l.value,
+      weight: l.bold ? '600' : '400',
+      color: l.cfColor || (l.bold ? INK : 'oklch(0.34 0.015 250)'),
+      labelColor: l.bold ? INK : DIM,
+      rule: l.bold ? 'transparent' : 'oklch(0.93 0.008 85)'
+    }));
+
+    const pinnedList = st.pins.map((id) => all.filter((x) => x.id === id)[0]).filter(Boolean);
+    const compareDefs = [
+      ['Community', (x) => x.n], ['Builder', (x) => x.b], ['Submarket', (x) => x.m.name],
+      ['From', (x) => k(x.pl)], ['STR / LTR', (x) => x.sStr + ' / ' + x.sLtr], ['Tier', (x) => 'T' + x.tier + ' (' + x.sc + ')'],
+      ['STR yield', (x) => pct(this.strGross(x) / x.pl, 0)], ['LTR yield', (x) => pct(this.ltrGross(x) / x.pl, 0)],
+      ['Incentive', (x) => x.promo ? money(x.promo.v) : '—'],
+      ['Investor OK', (x) => x.promo && x.promo.inv ? 'yes' : 'no'],
+      ['HOA', (x) => money(x.hoa)], ['Tax rate', (x) => pct(x.m.tax, 2)],
+      ['Build score', (x) => String(BLD[x.b].q)]
+    ];
+    const compareRows = compareDefs.map(([label, fn]) => ({
+      label,
+      cells: pinnedList.map((x) => ({
+        text: fn(x), weight: label === 'Community' ? '600' : '400',
+        color: label === 'Investor OK' ? (x.promo && x.promo.inv ? POS : DIM) : INK
+      }))
+    }));
+
+    const panelTabs = [['plans', 'Plans'], ['rental', 'Rental'], ['incentive', 'Incentive'], ['math', 'Math'], ['builder', 'Builder']].map(([id, label]) => ({
+      label, onClick: () => this.set('panel', id),
+      border: st.panel === id ? PRIM : 'transparent',
+      color: st.panel === id ? PRIM : DIM,
+      bg: st.panel === id ? 'oklch(0.975 0.012 240)' : '#fff'
+    }));
+
+    return {
+      asOf: 'Aug 31, 2026', marketRateLabel: MARKET_RATE.toFixed(2) + '%', investRateLabel: (MARKET_RATE + INVEST_ADDON).toFixed(2) + '%',
+      tabs, kpis, strategies, capModes, toggles, marketChips, builderRows, legend,
+      weightSliders, factorKey, onResetWeights: () => this.setStrategy(st.strategy),
+      weightLabel: st.custom ? 'Custom weights' : (st.strategy === 'blend' ? 'Blended preset' : st.strategy.toUpperCase() + ' preset'),
+      priceCap: cap, priceCapLabel: k(cap),
+      onCap: (e) => this.set('capOverride', +e.target.value),
+      query: st.query, onQuery: (e) => this.set('query', e.target.value),
+      mapPointsJson: JSON.stringify(mapPoints),
+      mapSubtitle: visible.length + ' communities on real county geometry — hover a pin for detail, click to load it into the panel.',
+      plotPoints, tierLegend, capLinePct: clamp((cap - 195000) / 100000 * 100) + '%',
+      plotSubtitle: 'Entry price against the weighted score — top-left is where the money is. Bubble size tracks unit count.',
+      leaders, sortChips, rows: tableRows, isEmpty: tableRows.length === 0,
+      tableTitle: st.builder ? st.builder + ' — attached product' : 'Community board',
+      tableSubtitle: tableRows.length + ' communities · sorted by ' + st.sort + ' · click any row to load the deep dive',
+      promoRows, gaps: GAPS, sel, bld, panelTabs,
+      tabPlans: st.panel === 'plans', tabRental: st.panel === 'rental', tabIncentive: st.panel === 'incentive',
+      tabMath: st.panel === 'math', tabBuilder: st.panel === 'builder',
+      calcModes, calcOut, calcSliders, calcLines,
+      onTogglePromoRate: () => this.set('usePromoRate', !st.usePromoRate),
+      promoRateMark: promoOn ? '✓' : '',
+      promoRateColor: promoOn ? POS : 'oklch(0.82 0.01 85)',
+      promoRateBg: promoOn ? 'oklch(0.975 0.02 150)' : '#fff',
+      promoRateBorder: promoOn ? 'oklch(0.80 0.06 150)' : 'oklch(0.90 0.008 85)',
+      promoRateNote: calc.promoRate
+        ? (promoOn ? 'Using ' + calc.rate.toFixed(2) + '%' + (c.promo.inv ? '' : ' — includes the +0.75% investment add-on, since this buydown is owner-occupant only') : 'Off — modeling ' + (MARKET_RATE + INVEST_ADDON).toFixed(2) + '% investment financing')
+        : 'No buydown published here; modeling ' + (MARKET_RATE + INVEST_ADDON).toFixed(2) + '% investment financing',
+      hasPins: pinnedList.length > 0, pinCount: pinnedList.length, compareRows,
+      onClearPins: () => this.set('pins', [])
+    };
+  }
+}
+
+</script>
+</body>
+</html>
